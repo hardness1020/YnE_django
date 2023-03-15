@@ -1,1 +1,1 @@
-# YnE_backend
+# YnE_django
