@@ -26,6 +26,8 @@
 - [🎈 Local Development ](#-local-development-)
 - [🔧 Running the Tests ](#-running-the-tests-)
 - [🚀 Deployment ](#-deployment-)
+  - [Development ](#development-)
+  - [Production ](#production-)
 
 ## 🧐 About <a name = "about"></a>
 
@@ -47,25 +49,25 @@ pip3 install -r requirements.txt
 
 ## 🎈 Local Development <a name="usage"></a>
 Doc: https://cloud.google.com/python/django/flexible-environment#linuxmacos_2
-1.  - Set environment variable to true if you are running the app locally
+1.  Select the project yne-django-dev and user account
+    ``` 
+    gcloud init
+    ```
+2.  Establish a connection from your local computer to your Cloud SQL instance for local testing purposes
+    - Create another terminal and run the following command
       ```
-      export TRAMPOLINE_CI=true
+      ./cloud-sql-proxy yne-django-dev:asia-east1:yne-django-dev
       ```
-    - Or establish a connection from your local computer to your Cloud SQL instance for local testing purposes
-      - Create another terminal and run the following command
-        ```
-        ./cloud_sql_proxy yne-django:asia-east1:yne-django
-        ```
-      - In orginal terminal
-        ```
-        export GOOGLE_CLOUD_PROJECT=yne-django
-        export USE_CLOUD_SQL_AUTH_PROXY=true
-        ```
-
-2.  Run the following command to start the server
+    - In orginal terminal
+      ```
+      export GOOGLE_CLOUD_PROJECT=yne-django-dev
+      export USE_CLOUD_SQL_AUTH_PROXY=true
+      ```
+3.  Run the following command to start the server
     ```
     python3 manage.py makemigrations
     python3 manage.py migrate
+    python3 manage.py collectstatic
     python3 manage.py runserver
     ```
     Then go to http://localhost:8000/ to see the app running
@@ -86,9 +88,43 @@ python3 manage.py test <app_name>
 
 ## 🚀 Deployment <a name = "deployment"></a>
 
-Doc: https://cloud.google.com/python/django/flexible-environment#linuxmacos_2
+Staging environment followed by: https://cloud.google.com/appengine/docs/legacy/standard/php/creating-separate-dev-environments
+
+<!-- Doc: https://cloud.google.com/python/django/flexible-environment#linuxmacos_2 -->
+
+<!-- ! Reset the environment variable to ensure that the app is deployed by the correct settings
 ```
-gcloud app deploy
+export GOOGLE_CLOUD_PROJECT=yne-django
+export USE_CLOUD_SQL_AUTH_PROXY=true
+export SETTINGS_NAME=yne_django_settings
+``` -->
+
+### Development <a name = "development"></a>
+Select the project yne-django-dev and user account
+``` 
+gcloud init
+```
+Create another terminal and run the following command
+```
+./cloud-sql-proxy yne-django-dev:asia-east1:yne-django-dev
+```
+Deploy the app
+```
+gcloud app deploy ./app-dev.yaml 
+```
+
+### Production <a name = "production"></a>
+Select the project yne-django and user account
+``` 
+gcloud init
+```
+Create another terminal and run the following command
+```
+./cloud-sql-proxy yne-django:asia-east1:yne-django
+```
+Deploy the app
+```
+gcloud app deploy ./app-prod.yaml 
 ```
 
 

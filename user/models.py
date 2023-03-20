@@ -7,13 +7,14 @@ class User(models.Model):
         FEMALE = 2, "Female"
         OTHER = 3 , "Unknown"
     #
-    id = models.AutoField(primary_key = True)
+    id = models.AutoField(primary_key=True)
+    avatar = models.ImageField(upload_to='user/avatar/', blank=True, null=True)
     name = models.CharField(max_length = 50)
-    gender = models.IntegerField(choices=Gender.choices , default=Gender.OTHER)            # intfield:integerchoice
+    gender = models.IntegerField(choices=Gender.choices, default=Gender.OTHER)            # intfield:integerchoice
     introduction = models.CharField(max_length = 1000)
     
-    hobbies = models.ManyToManyField('UserHobby' , related_name='all_users', blank = True)
-    jobs = models.ManyToManyField('UserJob' , related_name='all_users',blank = True)
+    hobbies = models.ManyToManyField('UserHobby', related_name='all_users', blank=True)
+    jobs = models.ManyToManyField('UserJob', related_name='all_users', blank=True)
     #hostactivities :User.host_activities
     #joinedactivities : User.participanting_activities
     #likedactivities : User.liked_activities
@@ -23,12 +24,12 @@ class User(models.Model):
 ##  ##  ##  ##
 # user list by hobby 
 class UserHobby(models.Model):
-    id = models.AutoField(primary_key = True)
-    name = models.CharField(max_length = 50)
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50)
         
 
 ##  ##  ##  ##
 # user list by job
 class UserJob(models.Model):
-    id = models.AutoField(primary_key = True)
-    name = models.CharField(max_length = 50)
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50)
