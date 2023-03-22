@@ -49,41 +49,52 @@ pip3 install -r requirements.txt
 
 ## 🎈 Local Development <a name="usage"></a>
 Doc: https://cloud.google.com/python/django/flexible-environment#linuxmacos_2
-1.  Select the project yne-django-dev and user account
-    ``` 
-    gcloud init
-    ```
-2.  Establish a connection from your local computer to your Cloud SQL instance for local testing purposes
-    - Create another terminal and run the following command
+1.  - **Development on Local Machine SQLite Database**
+        1. Setting up the environment variable
+            ``` 
+            export TRAMPOLINE_CI=True
+            ```
+    -  **Development on Google App Engine with cloud SQL**
+        1.  Select the project yne-django-dev and user account
+            ``` 
+            gcloud init
+            ```
+        2.  Establish a connection from your local computer to your Cloud SQL instance
+            - Create another terminal and run the following command (download the cloud-sql-proxy from https://cloud.google.com/sql/docs/mysql/sql-proxy)
+              ```
+              ./cloud-sql-proxy yne-django-dev:asia-east1:yne-django-dev
+              ```
+            - In orginal terminal
+              ```
+              export GOOGLE_CLOUD_PROJECT=yne-django-dev
+              export USE_CLOUD_SQL_AUTH_PROXY=true
+              ```
+    - Shift the development environment should reset the environment variable to ensure that the app is deployed by the correct settings
+        ``` 
+        export TRAMPOLINE_CI=False
+        ```
+  1.  Run the following command to start the server
       ```
-      ./cloud-sql-proxy yne-django-dev:asia-east1:yne-django-dev
+      python3 manage.py makemigrations
+      python3 manage.py migrate
+      python3 manage.py collectstatic
+      python3 manage.py runserver
       ```
-    - In orginal terminal
-      ```
-      export GOOGLE_CLOUD_PROJECT=yne-django-dev
-      export USE_CLOUD_SQL_AUTH_PROXY=true
-      ```
-3.  Run the following command to start the server
-    ```
-    python3 manage.py makemigrations
-    python3 manage.py migrate
-    python3 manage.py collectstatic
-    python3 manage.py runserver
-    ```
-    Then go to http://localhost:8000/ to see the app running
+      Then go to http://localhost:8000/ to see the app running
 
 
 ## 🔧 Running the Tests <a name = "tests"></a>
+1. Done first part of [Local Development ](#-local-development-)
+2.  - Recommended to **use the debug toolbar to run the tests**
+    - Or use CLI. Run all the tests
+      ```
+      python3 manage.py test
+      ```
 
-Run all the tests
-```
-python3 manage.py test
-```
-
-Run tests for a specific app
-```
-python3 manage.py test <app_name>
-```
+      Run tests for a specific app
+      ```
+      python3 manage.py test <app_name>
+      ```
 
 
 ## 🚀 Deployment <a name = "deployment"></a>

@@ -18,7 +18,8 @@ elif os.getenv("TRAMPOLINE_CI", None):
     placeholder = (
         f"SECRET_KEY=a\n"
         "GS_BUCKET_NAME=None\n"
-        f"DATABASE_URL=sqlite://{os.path.join(BASE_DIR, 'db.sqlite3')}"
+        f"DATABASE_URL=sqlite://{os.path.join(BASE_DIR, 'db.sqlite3')}\n"
+        "DEBUG=True\n"
     )
     env.read_env(io.StringIO(placeholder))
 elif os.environ.get("GOOGLE_CLOUD_PROJECT", None):
@@ -145,11 +146,19 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 # Define static storage via django-storages[google]
-GS_BUCKET_NAME = env("GS_BUCKET_NAME")
 STATIC_URL = "/static/"
-DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
-STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
-GS_DEFAULT_ACL = "publicRead"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+if os.getenv("TRAMPOLINE_CI", None):
+    # collect the static files in following path to STATIC_ROOT
+    STATICFILES_DIRS = [
+        # os.path.join(BASE_DIR, "static"),
+    ]
+else:
+    GS_BUCKET_NAME = env("GS_BUCKET_NAME")
+    DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+    STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+    GS_DEFAULT_ACL = "publicRead"
 
 
 # Default primary key field type

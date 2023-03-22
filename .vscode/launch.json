@@ -1,0 +1,60 @@
+{
+    // 使用 IntelliSense 以得知可用的屬性。
+    // 暫留以檢視現有屬性的描述。
+    // 如需詳細資訊，請瀏覽: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run: Django Local DB",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "runserver",
+            ],
+            "env": {
+                "TRAMPOLINE_CI": "True",},
+            "django": true,
+        },
+        {
+            "name": "Test: Django local DB",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "test",
+                // "user"
+            ],
+            "env": {
+                "TRAMPOLINE_CI": "True",},
+            "django": true
+        },
+        {
+            "name": "Run: Django cloud dev DB",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "runserver",
+            ],
+            "env": {
+                "GOOGLE_CLOUD_PROJECT": "yne-django-dev",
+                "USE_CLOUD_SQL_AUTH_PROXY": "true"},
+            "django": true,
+        },
+        {
+            "name": "Test: Django cloud dev DB",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "test",
+                // "user"
+            ],
+            "env": {
+                "GOOGLE_CLOUD_PROJECT": "yne-django-dev",
+                "USE_CLOUD_SQL_AUTH_PROXY": "true"},
+            "django": true
+        },
+    ]
+}
