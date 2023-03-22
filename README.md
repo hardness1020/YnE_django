@@ -55,9 +55,10 @@ Doc: https://cloud.google.com/python/django/flexible-environment#linuxmacos_2
             export TRAMPOLINE_CI=True
             ```
     -  **Development on Google App Engine with cloud SQL**
-        1.  Select the project yne-django-dev and user account
+        1.  Select the project yne-django-dev and user account and then initiate authentication (setup once on your local machine)
             ``` 
             gcloud init
+            gcloud auth application-default login
             ```
         2.  Establish a connection from your local computer to your Cloud SQL instance
             - Create another terminal and run the following command (download the cloud-sql-proxy from https://cloud.google.com/sql/docs/mysql/sql-proxy)
