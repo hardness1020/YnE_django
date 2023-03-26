@@ -11,3 +11,4 @@ media
 # Google
 .env
 cloud-sql-proxy
+google-cloud-sdk

@@ -14,7 +14,7 @@ env_file = os.path.join(BASE_DIR, ".env")
 
 if os.path.isfile(env_file):
     env.read_env(env_file)
-elif os.getenv("TRAMPOLINE_CI", None):
+elif os.getenv("TRAMPOLINE_CI", None): #export TRAMPOLINE_CI=true 每次打開treminal都要設定
     placeholder = (
         f"SECRET_KEY=a\n"
         "GS_BUCKET_NAME=None\n"
@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "activity",
-    "user"
+    "firebase_user"
 ]
 
 MIDDLEWARE = [

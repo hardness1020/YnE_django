@@ -55,7 +55,7 @@ Doc: https://cloud.google.com/python/django/flexible-environment#linuxmacos_2
             export TRAMPOLINE_CI=True
             ```
     -  **Development on Google App Engine with cloud SQL**
-        1.  Select the project yne-django-dev and user account and then initiate authentication (setup once on your local machine)
+        1.  Select the project yne-django-dev and firebase_user account and then initiate authentication (setup once on your local machine)
             ``` 
             gcloud init
             gcloud auth application-default login
@@ -112,7 +112,7 @@ export SETTINGS_NAME=yne_django_settings
 ``` -->
 
 ### Development <a name = "development"></a>
-Select the project yne-django-dev and user account
+Select the project yne-django-dev and firebase_user account
 ``` 
 gcloud init
 ```
@@ -126,7 +126,7 @@ gcloud app deploy ./app-dev.yaml
 ```
 
 ### Production <a name = "production"></a>
-Select the project yne-django and user account
+Select the project yne-django and firebase_user account
 ``` 
 gcloud init
 ```

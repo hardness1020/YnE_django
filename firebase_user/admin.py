@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import User,UserHobby,UserJob
+from .models import FirebaseUser,UserHobby,UserJob
 
-admin.site.register(User)
+admin.site.register(FirebaseUser)
 admin.site.register(UserHobby)
 admin.site.register(UserJob)
 
