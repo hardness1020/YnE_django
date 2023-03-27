@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from activity.models import ActivityParticipantAssociation , Activity , ActivityCategory , ActivityComment , ActivityLikedByPeopleAssociation , ActivityLocation
-# from firebase_user.serializers import UserShortSerializers, UserMediumSerializers
+# from django_user.serializers import UserShortSerializers, UserMediumSerializers
 
 #
 class ActivityCommentSerializers(serializers.ModelSerializer):

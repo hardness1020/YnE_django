@@ -6,7 +6,7 @@ from django.contrib import admin
 from rest_framework.routers import DefaultRouter
 
 from activity.views import ActivityViewSet , ActivityCommentViewSet , ActivityLocationViewSet
-from firebase_user.views import UserViewSet , UserHobbyViewSet , UserJobViewSet
+from django_user.views import UserViewSet , UserHobbyViewSet , UserJobViewSet
 
 
 # Create a router and register our viewsets with it.
@@ -15,9 +15,9 @@ router.register(r'activity/comment' , ActivityCommentViewSet , basename="activit
 router.register(r'activity/location' , ActivityLocationViewSet , basename="activity_location")
 router.register(r'activity' , ActivityViewSet , basename="activity")
 
-router.register(r'firebase_user/job' , UserJobViewSet , basename="user_job")
-router.register(r'firebase_user/hobby' , UserHobbyViewSet , basename="user_hobby")
-router.register(r'firebase_user', UserViewSet , basename="firebase_user")
+router.register(r'django_user/job' , UserJobViewSet , basename="user_job")
+router.register(r'django_user/hobby' , UserHobbyViewSet , basename="user_hobby")
+router.register(r'django_user', UserViewSet , basename="django_user")
 
 
 urlpatterns = [

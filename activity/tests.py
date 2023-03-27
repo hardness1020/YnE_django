@@ -7,7 +7,7 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory, APIClient
 from rest_framework import status
 
-from firebase_user.models import FirebaseUser , UserJob , UserHobby
+from django_user.models import DjangoUser , UserJob , UserHobby
 from activity.models import (Activity , ActivityCategory , ActivityComment,
                              ActivityLikedByPeopleAssociation , ActivityLocation,
                              ActivityParticipantAssociation)
@@ -16,19 +16,19 @@ class ActivityTests(TestCase):
     
     def setUp(self):
         self.client = APIClient()
-        self.firebase_user = FirebaseUser.objects.create(uid="test_user_uid",
+        self.django_user = DjangoUser.objects.create(uid="test_user_uid",
                                         name="test_user")
         self.location = ActivityLocation.objects.create(name="test_location")
         self.category = ActivityCategory.objects.create(name="test_category")
         self.location.save()
-        self.firebase_user.save()
+        self.django_user.save()
         self.category.save()
         self.activity = Activity.objects.create(start_date="start_date",
                                                end_date="end_date",
                                                title="Surfing",
                                                location=self.location,
                                                description="description",
-                                               host=self.firebase_user)
+                                               host=self.django_user)
         self.activity.categories.add(self.category)
         self.activity.save()
     
@@ -41,7 +41,7 @@ class ActivityTests(TestCase):
                                                title="title_2",
                                                location=self.location,
                                                description="description",
-                                               host=self.firebase_user)
+                                               host=self.django_user)
         response = self.client.get('/activity/')
         self.assertEqual(response.status_code , status.HTTP_200_OK)
         self.assertEqual(response.data['results'][0]['host_name'] , "test_user")
@@ -65,7 +65,7 @@ class ActivityTests(TestCase):
         Test create Activity
         """
         response = self.client.post(f'/activity/' , data={
-            'user_id': self.firebase_user.id,
+            'user_id': self.django_user.id,
             'start_date': 'test_start_date',
             'end_date': 'test_end_date',
             'title': 'test_title',
@@ -88,7 +88,7 @@ class ActivityTests(TestCase):
         """
         Test destroy Activity
         """
-        other_user = FirebaseUser.objects.create(uid = "other_user_uid",
+        other_user = DjangoUser.objects.create(uid = "other_user_uid",
                                          name="other_user")
         # Invalid destroy
         response = self.client.delete(f'/activity/{self.activity.id}/' , data={
@@ -99,7 +99,7 @@ class ActivityTests(TestCase):
         
         # Valid destroy
         response = self.client.delete(f'/activity/{self.activity.id}/' , data={
-            'user_id':self.firebase_user.id
+            'user_id':self.django_user.id
         })
         self.assertEqual(response.status_code , status.HTTP_200_OK)
         self.assertEqual(response.data['message'] , "Delete activity successfully.")
@@ -110,7 +110,7 @@ class ActivityTests(TestCase):
         """
         Test update Activity
         """
-        other_user = FirebaseUser.objects.create(name="other_user",
+        other_user = DjangoUser.objects.create(name="other_user",
                                          uid="other_user_uid")
         # Invalid update
         response = self.client.put(f'/activity/{self.activity.id}/' , data={
@@ -128,7 +128,7 @@ class ActivityTests(TestCase):
         
         # Valid update
         response = self.client.put(f'/activity/{self.activity.id}/' , data={
-            'user_id': self.firebase_user.id,
+            'user_id': self.django_user.id,
             'start_date': 'update_start_date',
             'end_date': 'update_end_date',
             'title': 'update_title',
@@ -146,12 +146,12 @@ class ActivityTests(TestCase):
         Test liked Activity
         """
         response = self.client.put(f'/activity/{self.activity.id}/liked/' , data={
-            'user_id':self.firebase_user.id
+            'user_id':self.django_user.id
         })
         self.assertEqual(response.status_code , status.HTTP_200_OK)
-        self.assertEqual(response.data['message'] , f'{self.firebase_user.name} likes the {self.activity.title} activity.')
+        self.assertEqual(response.data['message'] , f'{self.django_user.name} likes the {self.activity.title} activity.')
         self.assertEqual(response.data['data']['likes_num'] , 1)
-        self.assertEqual(response.data['data']['liked_users'][0] , self.firebase_user.id)
+        self.assertEqual(response.data['data']['liked_users'][0] , self.django_user.id)
         self.assertEqual(response.data['status'], 200)
         
     # OK
@@ -159,14 +159,14 @@ class ActivityTests(TestCase):
         """
         Test unliked Activity
         """
-        self.activity.liked_users.add(self.firebase_user)
+        self.activity.liked_users.add(self.django_user)
         self.activity.save()
         
         response = self.client.put(f'/activity/{self.activity.id}/unliked/' , data={
-            'user_id':self.firebase_user.id
+            'user_id':self.django_user.id
         })
         self.assertEqual(response.status_code , status.HTTP_200_OK)
-        self.assertEqual(response.data['message'] , f'{self.firebase_user.name} unlikes the {self.activity.title} activity.')
+        self.assertEqual(response.data['message'] , f'{self.django_user.name} unlikes the {self.activity.title} activity.')
         self.assertEqual(response.data['data']['likes_num'] , 0)
         self.assertEqual(response.data['status'], 200)
         
@@ -176,28 +176,28 @@ class ActivityTests(TestCase):
         Test get all comments of Activity
         """
         activity_comment1 = ActivityComment.objects.create(content="test_content1", 
-                                                           author=self.firebase_user, 
+                                                           author=self.django_user, 
                                                            belong_activity=self.activity)
         activity_comment2 = ActivityComment.objects.create(content="test_content2", 
-                                                           author=self.firebase_user, 
+                                                           author=self.django_user, 
                                                            belong_activity=self.activity)
         response = self.client.get(f'/activity/{self.activity.id}/comments/')
         self.assertEqual(response.status_code , status.HTTP_200_OK)
         self.assertEquals(response.data['data'][0]['content'] , "test_content1")
         self.assertEquals(response.data['data'][1]['content'] , "test_content2")
-        self.assertEqual(response.data['data'][0]['author'], self.firebase_user.id)
+        self.assertEqual(response.data['data'][0]['author'], self.django_user.id)
         
 class ActivityCommentTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.firebase_user = FirebaseUser.objects.create(name="test_user",
+        self.django_user = DjangoUser.objects.create(name="test_user",
                                         uid="test_user_uid")
-        self.user2 = FirebaseUser.objects.create(name="test_user2",
+        self.user2 = DjangoUser.objects.create(name="test_user2",
                                          uid="test_user2_uid")
         self.location = ActivityLocation.objects.create(name="test_location")
         self.category = ActivityCategory.objects.create(name="test_category")
         self.activity = Activity.objects.create(
-            host = self.firebase_user,
+            host = self.django_user,
             start_date = 'test_start_date',
             end_date = 'test_end_date',
             title = 'test_title',
@@ -217,13 +217,13 @@ class ActivityCommentTests(TestCase):
         self.activity2.save()
         self.activity.save()
         self.activity_comment = ActivityComment.objects.create(content="test_comment",
-                                                               author=self.firebase_user,
+                                                               author=self.django_user,
                                                                belong_activity=self.activity)
         self.activity_comment2 = ActivityComment.objects.create(content="test_comment2",
                                                                 author=self.user2,
                                                                 belong_activity=self.activity)
         self.activity2_comment = ActivityComment.objects.create(content="test_comment",
-                                                                author=self.firebase_user,
+                                                                author=self.django_user,
                                                                 belong_activity=self.activity2)
     
     # OK
@@ -232,13 +232,13 @@ class ActivityCommentTests(TestCase):
         Test create ActivityComment
         """
         response = self.client.post(f'/activity/comment/' , data={
-            'user_id': self.firebase_user.id,
+            'user_id': self.django_user.id,
             'content': 'test_comment',
             'belong_activity_id': self.activity.id
         })
         self.assertEqual(response.status_code , status.HTTP_200_OK)
         self.assertEqual(response.data['data']['content'] , "test_comment")
-        self.assertEqual(response.data['data']['author'] , self.firebase_user.id)
+        self.assertEqual(response.data['data']['author'] , self.django_user.id)
         self.assertEqual(response.data['data']['belong_activity'] , self.activity.id)
         
     # OK
@@ -247,7 +247,7 @@ class ActivityCommentTests(TestCase):
         Test destroy ActivityComment
         """
         response = self.client.delete(f'/activity/comment/{self.activity_comment2.id}/' , data={
-            'user_id': self.firebase_user.id
+            'user_id': self.django_user.id
         })
         self.assertEqual(response.status_code , status.HTTP_200_OK)
         self.assertEqual(response.data['message'] , 'Delete comment successfully.')
@@ -258,7 +258,7 @@ class ActivityCommentTests(TestCase):
         Test update ActivityComment
         """
         response = self.client.put(f'/activity/comment/{self.activity_comment2.id}/' , data={
-            'user_id': self.firebase_user.id,
+            'user_id': self.django_user.id,
             'content': 'update_comment',
             'belong_activity_id': self.activity2.id
         })
@@ -273,14 +273,14 @@ class ActivityLocationTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.client = APIClient()
-        self.firebase_user = FirebaseUser.objects.create(name="test_user",
+        self.django_user = DjangoUser.objects.create(name="test_user",
                                         uid="test_user_uid")
-        self.user2 = FirebaseUser.objects.create(name="test_user2",
+        self.user2 = DjangoUser.objects.create(name="test_user2",
                                          uid="test_user2_uid")
         self.location = ActivityLocation.objects.create(name="test_location")
         self.category = ActivityCategory.objects.create(name="test_category")
         self.activity = Activity.objects.create(
-            host = self.firebase_user,
+            host = self.django_user,
             start_date = 'test_start_date',
             end_date = 'test_end_date',
             title = 'test_title',

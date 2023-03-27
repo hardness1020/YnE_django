@@ -24,7 +24,7 @@
             "program": "${workspaceFolder}/manage.py",
             "args": [
                 "test",
-                // "firebase_user"
+                // "django_user"
             ],
             "env": {
                 "TRAMPOLINE_CI": "True",},
@@ -50,7 +50,7 @@
             "program": "${workspaceFolder}/manage.py",
             "args": [
                 "test",
-                // "firebase_user"
+                // "django_user"
             ],
             "env": {
                 "GOOGLE_CLOUD_PROJECT": "yne-django-dev",

@@ -57,7 +57,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "activity",
-    "firebase_user"
+    "django_user",
+    "auth_firebase"    
 ]
 
 MIDDLEWARE = [

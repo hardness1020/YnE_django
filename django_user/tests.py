@@ -7,7 +7,7 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory, APIClient
 from rest_framework import status
 
-from firebase_user.models import FirebaseUser , UserJob , UserHobby
+from django_user.models import DjangoUser , UserJob , UserHobby
 from activity.models import (Activity , ActivityCategory , ActivityComment,
                              ActivityLikedByPeopleAssociation , ActivityLocation,
                              ActivityParticipantAssociation)
@@ -15,11 +15,11 @@ from activity.models import (Activity , ActivityCategory , ActivityComment,
 class UserTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user1 = FirebaseUser.objects.create(uid='test_user1_uid',
+        self.user1 = DjangoUser.objects.create(uid='test_user1_uid',
                                          name='test_user1',
                                          gender='1',
                                          introduction='test_user1_introduction')
-        self.user2 = FirebaseUser.objects.create(uid='test_user2_username',
+        self.user2 = DjangoUser.objects.create(uid='test_user2_username',
                                          name='test_user2',
                                          gender='2',
                                          introduction='test_user2_introduction')
@@ -39,9 +39,9 @@ class UserTests(TestCase):
     # OK
     def test_user_create(self):
         """
-        Test FirebaseUser Create
+        Test DjangoUser Create
         """
-        response = self.client.post(f'/firebase_user/', data={
+        response = self.client.post(f'/django_user/', data={
             'uid': 'test_user3_uid',
             'name': 'test_user3',
             'gender':'1',
@@ -51,7 +51,7 @@ class UserTests(TestCase):
         })
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['message'], 'FirebaseUser created successfully')
+        self.assertEqual(response.data['message'], 'DjangoUser created successfully')
         self.assertEqual(response.data['data']['name'], 'test_user3')
         self.assertEqual(response.data['data']['hobbies_num'], 2)
         self.assertEqual(response.data['data']['participating_activities_num'], 0)
@@ -59,9 +59,9 @@ class UserTests(TestCase):
     # OK
     def test_user_update(self):
         """
-        Test FirebaseUser Update
+        Test DjangoUser Update
         """
-        response = self.client.put(f'/firebase_user/{self.user1.id}/', data={
+        response = self.client.put(f'/django_user/{self.user1.id}/', data={
             'name': 'test_user1_update',
             'gender':'2',
             'introduction':'test_user1_introduction_update',
@@ -69,16 +69,16 @@ class UserTests(TestCase):
             'jobs_id':[self.job2.id]
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['message'], 'FirebaseUser updated successfully')
+        self.assertEqual(response.data['message'], 'DjangoUser updated successfully')
         self.assertEqual(response.data['data']['name'], 'test_user1_update')
         self.assertEqual(response.data['data']['hobbies_num'], 1)
         
     # OK
     def test_user_list(self):
         """
-        Test FirebaseUser List
+        Test DjangoUser List
         """  
-        response = self.client.get(f'/firebase_user/')
+        response = self.client.get(f'/django_user/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['results'][0]['name'], 'test_user1')
         self.assertEqual(response.data['results'][1]['name'], 'test_user2')
@@ -86,9 +86,9 @@ class UserTests(TestCase):
     # OK
     def test_user_retrieve(self):
         """
-        Test FirebaseUser Retrieve
+        Test DjangoUser Retrieve
         """
-        response = self.client.get(f'/firebase_user/{self.user1.id}/')
+        response = self.client.get(f'/django_user/{self.user1.id}/')
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'test_user1')
@@ -98,21 +98,21 @@ class UserTests(TestCase):
     # OK
     def test_user_destroy(self):
         """
-        Test FirebaseUser Destroy
+        Test DjangoUser Destroy
         """
-        response = self.client.delete(f'/firebase_user/{self.user1.id}/')
+        response = self.client.delete(f'/django_user/{self.user1.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['message'], 'FirebaseUser deleted successfully')
+        self.assertEqual(response.data['message'], 'DjangoUser deleted successfully')
         
 
 class UserHobbyTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user1 = FirebaseUser.objects.create(uid='test_user1_uid',
+        self.user1 = DjangoUser.objects.create(uid='test_user1_uid',
                                          name='test_user1',
                                          gender='1',
                                          introduction='test_user1_introduction')
-        self.user2 = FirebaseUser.objects.create(uid='test_user2_uid',
+        self.user2 = DjangoUser.objects.create(uid='test_user2_uid',
                                          name='test_user2',
                                          gender='2',
                                          introduction='test_user2_introduction')
@@ -132,9 +132,9 @@ class UserHobbyTests(TestCase):
     # OK
     def test_user_hobby_create(self):
         """
-        Test FirebaseUser Hobby Create
+        Test DjangoUser Hobby Create
         """
-        response = self.client.post(f'/firebase_user/hobby/', data={
+        response = self.client.post(f'/django_user/hobby/', data={
             'name': 'test_create_hobby'
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -145,9 +145,9 @@ class UserHobbyTests(TestCase):
     # OK
     def test_user_hobby_update(self):
         """
-        Test FirebaseUser Hobby Update
+        Test DjangoUser Hobby Update
         """
-        response = self.client.put(f'/firebase_user/hobby/{self.hobby1.id}/', data={
+        response = self.client.put(f'/django_user/hobby/{self.hobby1.id}/', data={
             'name': 'test_update_hobby'
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -157,9 +157,9 @@ class UserHobbyTests(TestCase):
     # OK
     def test_user_hobby_list(self):
         """
-        Test FirebaseUser Hobby List
+        Test DjangoUser Hobby List
         """
-        response = self.client.get(f'/firebase_user/hobby/')
+        response = self.client.get(f'/django_user/hobby/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['results'][0]['name'], 'test_hobby1')
         self.assertEqual(response.data['results'][1]['name'], 'test_hobby2')
@@ -167,9 +167,9 @@ class UserHobbyTests(TestCase):
     # OK
     def test_user_hobby_retrieve(self):
         """
-        Test FirebaseUser Hobby Retrieve
+        Test DjangoUser Hobby Retrieve
         """
-        response = self.client.get(f'/firebase_user/hobby/{self.hobby1.id}/')
+        response = self.client.get(f'/django_user/hobby/{self.hobby1.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'test_hobby1')
         self.assertEqual(response.data['all_users'][0]['name'], 'test_user1')
@@ -178,20 +178,20 @@ class UserHobbyTests(TestCase):
     # OK
     def test_user_hobby_destroy(self):
         """
-        Test FirebaseUser Hobby Destroy
+        Test DjangoUser Hobby Destroy
         """
-        response = self.client.delete(f'/firebase_user/hobby/{self.hobby1.id}/')
+        response = self.client.delete(f'/django_user/hobby/{self.hobby1.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], 'UserHobby delete successfully')
 
 class UserJobTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user1 = FirebaseUser.objects.create(uid = 'test_user1_uid',
+        self.user1 = DjangoUser.objects.create(uid = 'test_user1_uid',
                                          name='test_user1',
                                          gender='1',
                                          introduction='test_user1_introduction')
-        self.user2 = FirebaseUser.objects.create(uid='test_user2_uid',
+        self.user2 = DjangoUser.objects.create(uid='test_user2_uid',
                                          name='test_user2',
                                          gender='2',
                                          introduction='test_user2_introduction')
@@ -211,9 +211,9 @@ class UserJobTests(TestCase):
     # OK
     def test_user_job_create(self):
         """
-        Test FirebaseUser Job Create
+        Test DjangoUser Job Create
         """
-        response = self.client.post(f'/firebase_user/job/', data={
+        response = self.client.post(f'/django_user/job/', data={
             'name': 'test_create_job'
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -224,9 +224,9 @@ class UserJobTests(TestCase):
     # OK
     def test_user_job_update(self):
         """
-        Test FirebaseUser Job Update
+        Test DjangoUser Job Update
         """
-        response = self.client.put(f'/firebase_user/job/{self.job1.id}/', data={
+        response = self.client.put(f'/django_user/job/{self.job1.id}/', data={
             'name': 'test_update_job'
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -236,9 +236,9 @@ class UserJobTests(TestCase):
     # OK
     def test_user_job_list(self):
         """
-        Test FirebaseUser Job List
+        Test DjangoUser Job List
         """
-        response = self.client.get(f'/firebase_user/job/')
+        response = self.client.get(f'/django_user/job/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['results'][0]['name'], 'test_job1')
         self.assertEqual(response.data['results'][1]['name'], 'test_job2')
@@ -246,9 +246,9 @@ class UserJobTests(TestCase):
     # OK
     def test_user_job_retrieve(self):
         """
-        Test FirebaseUser Job Retrieve
+        Test DjangoUser Job Retrieve
         """
-        response = self.client.get(f'/firebase_user/job/{self.job1.id}/')
+        response = self.client.get(f'/django_user/job/{self.job1.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'test_job1')
         self.assertEqual(response.data['all_users_num'] , 2)
@@ -257,8 +257,8 @@ class UserJobTests(TestCase):
     # OK
     def test_user_job_destroy(self):
         """
-        Test FirebaseUser Job Destroy
+        Test DjangoUser Job Destroy
         """
-        response = self.client.delete(f'/firebase_user/job/{self.job1.id}/')
+        response = self.client.delete(f'/django_user/job/{self.job1.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], 'UserJob delete successfully')

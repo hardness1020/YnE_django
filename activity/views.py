@@ -4,16 +4,17 @@ from datetime import datetime, timedelta
 from django.db.models import Q, Count
 from django.db import transaction
 from rest_framework import viewsets #支援以下功能：{list , creat , retrieve , update , partial_update , destroy}
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from auth_firebase.authentication import FirebaseAuthentication
 
 from activity.models import (Activity , ActivityParticipantAssociation,
                              ActivityCategory , ActivityComment, ActivityLikedByPeopleAssociation , ActivityLocation)
 from activity.serializers import (ActivityShortSerializers , ActivityMediumSerializers,
                                   ActivitySerializers , ActivityCommentSerializers , ActivityLocationSerializers)
-from firebase_user.models import (FirebaseUser , UserJob , UserHobby )
+from django_user.models import (DjangoUser , UserJob , UserHobby )
 
 
 class ActivityPages(PageNumberPagination):
@@ -35,6 +36,8 @@ class ActivityViewSet(viewsets.GenericViewSet):
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializers
     pagination_class = ActivityPages
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [FirebaseAuthentication]
     
     # GET
     def list(self , request):
@@ -58,7 +61,7 @@ class ActivityViewSet(viewsets.GenericViewSet):
     
     # POST
     def create(self , request, pk=None):
-        firebase_user = FirebaseUser.objects.get(id = request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id = request.data.get('user_id'))
         start_date = request.data.get('start_date')
         end_date = request.data.get('end_date')
         title = request.data.get('title')
@@ -70,10 +73,10 @@ class ActivityViewSet(viewsets.GenericViewSet):
                                                title=title,
                                                location=ActivityLocation.objects.get(id=location_id),
                                                description=description,
-                                               host=firebase_user)
+                                               host=django_user)
         new_activity.save()
         #                                  
-        new_activity.participants.add(firebase_user)
+        new_activity.participants.add(django_user)
         for category_id in categories_id:
             new_activity.categories.add(ActivityCategory.objects.get(id=category_id))
             
@@ -84,9 +87,9 @@ class ActivityViewSet(viewsets.GenericViewSet):
     #PUT
     def update(self , request, pk=None, *args, **kwargs):
         activity = self.get_object()
-        firebase_user = FirebaseUser.objects.get(id=request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
         # 加上驗整 ->只有host才可以更改內容
-        if(firebase_user.id != activity.host.id):
+        if(django_user.id != activity.host.id):
             return Response({'message':"You don't have permission to update this activity.",
                              'status':403})
     
@@ -115,9 +118,9 @@ class ActivityViewSet(viewsets.GenericViewSet):
 
     #DELETE
     def destroy(self , request, pk=None, *args, **kwargs):
-        firebase_user = FirebaseUser.objects.get(id=request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
         activity = self.get_object()
-        if(firebase_user.id != activity.host.id):
+        if(django_user.id != activity.host.id):
             return Response({'message':'You don\'t have permission to delete this activity.',
                              'status':403})
         
@@ -125,28 +128,28 @@ class ActivityViewSet(viewsets.GenericViewSet):
         return Response({'message':'Delete activity successfully.',
                          'status':200})
     
-    # TODO: Visibliity -> If firebase_user hasn't liked the activity, he can't access this function
+    # TODO: Visibliity -> If django_user hasn't liked the activity, he can't access this function
     @action(detail=True , methods=['put'])
     def unliked(self , request, pk=None):
-        firebase_user = FirebaseUser.objects.get(id=request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
         activity = self.get_object()
         
-        activity.liked_users.remove(firebase_user)
+        activity.liked_users.remove(django_user)
         activity.save()
         serializer = ActivitySerializers(activity)
-        return Response({'message':f'{firebase_user.name} unlikes the {activity.title} activity.',
+        return Response({'message':f'{django_user.name} unlikes the {activity.title} activity.',
                          'status':200,
                          'data':serializer.data})
     
     @action(detail=True , methods=['put'])
     def liked(self , request, pk=None):
         activity = self.get_object()
-        firebase_user = FirebaseUser.objects.get(id=request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
         
-        activity.liked_users.add(firebase_user)
+        activity.liked_users.add(django_user)
         activity.save()
         serializer = ActivitySerializers(activity)
-        return Response({'message':f'{firebase_user.name} likes the {activity.title} activity.',
+        return Response({'message':f'{django_user.name} likes the {activity.title} activity.',
                          'status':200,
                          'data':serializer.data})
         
@@ -162,25 +165,27 @@ class ActivityViewSet(viewsets.GenericViewSet):
 class ActivityCommentViewSet(viewsets.GenericViewSet):
     queryset = ActivityComment.objects.all()
     serializer_class = ActivityCommentSerializers
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [FirebaseAuthentication]
     
     def create(self , request, pk=None):
-        firebase_user = FirebaseUser.objects.get(id=request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
         content = request.data.get('content')
         belong_activity_id = request.data.get('belong_activity_id')
         new_comment = ActivityComment.objects.create(content=content,
-                                                     author=firebase_user,
+                                                     author=django_user,
                                                      belong_activity=Activity.objects.get(id=belong_activity_id))
         serializer = ActivityCommentSerializers(new_comment)
         return Response({'message':"Comment created",
                          'data':serializer.data})
     
     def update(self , request, pk=None, *args, **kwargs):
-        firebase_user = FirebaseUser.objects.get(id=request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
         activitycomment = self.get_object()
         content = request.data.get('content')
         belong_activity_id = request.data.get('belong_activity_id')
         
-        activitycomment.author = firebase_user
+        activitycomment.author = django_user
         activitycomment.content = content
         activitycomment.belong_activity = Activity.objects.get(id=belong_activity_id)
         
@@ -189,10 +194,10 @@ class ActivityCommentViewSet(viewsets.GenericViewSet):
         return Response({'message':'Update comment successfully.', 'data':serializer.data})
     
     def destroy(self , request, pk=None, *args, **kwargs):
-        firebase_user = FirebaseUser.objects.get(id=request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
         activitycomment = self.get_object()
         # TODO: Authentication
-        # if(firebase_user.id != activitycomment.author.id):
+        # if(django_user.id != activitycomment.author.id):
         #     return Response(status=403)
         
         activitycomment.delete()
@@ -202,6 +207,8 @@ class ActivityLocationViewSet(viewsets.GenericViewSet):
     queryset = ActivityLocation.objects.all()
     pagination_class = ActivityPages
     serializer_class = ActivityLocationSerializers
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [FirebaseAuthentication]
     
     def list(self , request):
         activities_location_list = self.get_queryset()

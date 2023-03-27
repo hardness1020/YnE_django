@@ -4,15 +4,16 @@ from datetime import datetime, timedelta
 from django.db.models import Q, Count
 from django.db import transaction
 from rest_framework import viewsets #支援以下功能：{list , creat , retrieve , update , partial_update , destory}
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from auth_firebase.authentication import FirebaseAuthentication
 
 from activity.models import (Activity , ActivityCategory , ActivityComment ,
                              ActivityLikedByPeopleAssociation , ActivityParticipantAssociation)
-from firebase_user.models import (FirebaseUser , UserHobby , UserJob)
-from firebase_user.serializers import UserSerializers  , UserShortSerializers , UserMediumSerializers, UserHobbySerializers , UserJobSerializers
+from django_user.models import (DjangoUser , UserHobby , UserJob)
+from django_user.serializers import UserSerializers  , UserShortSerializers , UserMediumSerializers, UserHobbySerializers , UserJobSerializers
 
 # Create your views here.
 class UserPages(PageNumberPagination):
@@ -29,11 +30,13 @@ class UserPages(PageNumberPagination):
             'count': self.page.paginator.count,
             'results': data
         })
+        
 class UserViewSet(viewsets.GenericViewSet):
-    queryset = FirebaseUser.objects.all()
+    queryset = DjangoUser.objects.all()
     serializer_class = UserSerializers
     pagination_class = UserPages
-    # permission_classes = IsAuthenticated
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [FirebaseAuthentication]
 
     #GET
     def list(self, request):
@@ -43,8 +46,8 @@ class UserViewSet(viewsets.GenericViewSet):
         return self.get_paginated_response(serializers.data)
     
     def retrieve(self, request , pk=None):
-        firebase_user = self.get_object()
-        serializers = UserSerializers(firebase_user)
+        django_user = self.get_object()
+        serializers = UserSerializers(django_user)
         return Response(data=serializers.data)
     
     
@@ -56,7 +59,7 @@ class UserViewSet(viewsets.GenericViewSet):
         introduction = request.data.get('introduction')
         hobbies_id = request.data.getlist('hobbies_id')
         jobs_id = request.data.getlist('jobs_id')
-        new_user = FirebaseUser.objects.create(uid=uid,
+        new_user = DjangoUser.objects.create(uid=uid,
                                        name=name,
                                        gender=gender,
                                        introduction=introduction,)
@@ -67,43 +70,45 @@ class UserViewSet(viewsets.GenericViewSet):
         new_user.save()
         
         serializer = UserSerializers(new_user)
-        return Response({'message':'FirebaseUser created successfully',
+        return Response({'message':'DjangoUser created successfully',
                          'data':serializer.data})
     
     #PUT
     def update(self , request, pk=None, *args, **kwargs):
-        firebase_user = self.get_object()
+        django_user = self.get_object()
         name = request.data.get('name')
         gender = request.data.get('gender')
         introduction = request.data.get('introduction')
         hobbies_id = request.data.getlist('hobbies_id')
         jobs_id = request.data.getlist('jobs_id')
         
-        firebase_user.name = name
-        firebase_user.gender = gender
-        firebase_user.introduction = introduction
-        firebase_user.hobbies.clear()
+        django_user.name = name
+        django_user.gender = gender
+        django_user.introduction = introduction
+        django_user.hobbies.clear()
         for hobby_id in hobbies_id:
-            firebase_user.hobbies.add(UserHobby.objects.get(id=hobby_id))
-        firebase_user.jobs.clear()
+            django_user.hobbies.add(UserHobby.objects.get(id=hobby_id))
+        django_user.jobs.clear()
         for job_id in jobs_id:
-            firebase_user.jobs.add(UserJob.objects.get(id=job_id)) 
-        firebase_user.save()
+            django_user.jobs.add(UserJob.objects.get(id=job_id)) 
+        django_user.save()
         
-        serializer = UserSerializers(firebase_user)
-        return Response({'message':"FirebaseUser updated successfully",
+        serializer = UserSerializers(django_user)
+        return Response({'message':"DjangoUser updated successfully",
                          'data':serializer.data})
     
     #DELETE
     def destroy(self , request, pk=None,*args, **kwargs):
-        firebase_user = self.get_object()
-        firebase_user.delete()
-        return Response({'message':"FirebaseUser deleted successfully"})
+        django_user = self.get_object()
+        django_user.delete()
+        return Response({'message':"DjangoUser deleted successfully"})
 
 class UserHobbyViewSet(viewsets.GenericViewSet):
     queryset = UserHobby.objects.all()
     serializer_class = UserHobbySerializers
     pagination_class = UserPages
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [FirebaseAuthentication]
     
     #GET
     def list(self ,request):
@@ -145,6 +150,8 @@ class UserJobViewSet(viewsets.GenericViewSet):
     queryset = UserJob.objects.all()
     serializer_class = UserJobSerializers
     pagination_class = UserPages
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [FirebaseAuthentication]
     
     #GET
     def list(self ,request):

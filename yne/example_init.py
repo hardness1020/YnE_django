@@ -1,4 +1,4 @@
-from firebase_user.models import FirebaseUser , UserJob , UserHobby
+from django_user.models import DjangoUser , UserJob , UserHobby
 from activity.models import (Activity, ActivityCategory, ActivityComment,
                              ActivityLikedByPeopleAssociation, ActivityParticipantAssociation)
 
@@ -14,15 +14,15 @@ class ExampleInit:
         self.hobby3 = UserHobby.objects.create(name='hobby3')
         
     def create_user(self):
-        self.user1 = FirebaseUser.objects.create(username='user1_account',
+        self.user1 = DjangoUser.objects.create(username='user1_account',
                                          name='user1',
                                          gender='1',
                                          introduction='user1 introduction')
-        self.user2 = FirebaseUser.objects.create(username='user2_account',
+        self.user2 = DjangoUser.objects.create(username='user2_account',
                                          name='user2',
                                          gender='2',
                                          introduction='user2 introduction')
-        self.user3 = FirebaseUser.objects.create(username='user3_account',
+        self.user3 = DjangoUser.objects.create(username='user3_account',
                                          name='user3',
                                          gender='3',
                                          introduction='user3 introduction')
