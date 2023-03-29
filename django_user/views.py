@@ -35,8 +35,8 @@ class UserViewSet(viewsets.GenericViewSet):
     queryset = DjangoUser.objects.all()
     serializer_class = UserSerializers
     pagination_class = UserPages
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [FirebaseAuthentication]
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [FirebaseAuthentication]
 
     #GET
     def list(self, request):
@@ -107,8 +107,8 @@ class UserHobbyViewSet(viewsets.GenericViewSet):
     queryset = UserHobby.objects.all()
     serializer_class = UserHobbySerializers
     pagination_class = UserPages
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [FirebaseAuthentication]
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [FirebaseAuthentication]
     
     #GET
     def list(self ,request):
@@ -150,8 +150,8 @@ class UserJobViewSet(viewsets.GenericViewSet):
     queryset = UserJob.objects.all()
     serializer_class = UserJobSerializers
     pagination_class = UserPages
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [FirebaseAuthentication]
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [FirebaseAuthentication]
     
     #GET
     def list(self ,request):

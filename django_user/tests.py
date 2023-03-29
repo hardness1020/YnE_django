@@ -6,6 +6,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, APIClient
 from rest_framework import status
+import auth_firebase.authentication
+import firebase_admin.auth as auth
+from yne import settings
+
 
 from django_user.models import DjangoUser , UserJob , UserHobby
 from activity.models import (Activity , ActivityCategory , ActivityComment,
@@ -15,6 +19,8 @@ from activity.models import (Activity , ActivityCategory , ActivityComment,
 class UserTests(TestCase):
     def setUp(self):
         self.client = APIClient()
+        # self.uid = settings.FIREBASE_TEST_USER_UID
+        # self.firebase_user = auth.get_user(self.uid)
         self.user1 = DjangoUser.objects.create(uid='test_user1_uid',
                                          name='test_user1',
                                          gender='1',
@@ -41,6 +47,19 @@ class UserTests(TestCase):
         """
         Test DjangoUser Create
         """
+        # API_KEY = 'AIzaSyDTjaOA3ryZ28y8HX8FyeK92ZiJ1DcB1xo'
+        # response = self.client.post('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDTjaOA3ryZ28y8HX8FyeK92ZiJ1DcB1xo',
+        #                              data={
+        #     'email':settings.FIREBASE_TEST_USER_EMAIL,
+        #     'password':settings.FIREBASE_TEST_USER_PASSWORD,
+        #     'returnSecureToken':True
+        # })
+        # if response.status_code != 200:
+        #     print(response.status_code)
+        #   #   #   #
+        # token = auth.create_custom_token(self.uid).decode('utf-8')
+        # header = {'HTTP_HTTP_AUTHORIZATION': token}
+        
         response = self.client.post(f'/django_user/', data={
             'uid': 'test_user3_uid',
             'name': 'test_user3',
@@ -48,7 +67,7 @@ class UserTests(TestCase):
             'introduction':'test_user3_introduction',
             'hobbies_id':[self.hobby1.id , self.hobby2.id],
             'jobs_id':[self.job1.id , self.job2.id]
-        })
+        }, )
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], 'DjangoUser created successfully')

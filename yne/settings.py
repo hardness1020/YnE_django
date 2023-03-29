@@ -14,7 +14,8 @@ env_file = os.path.join(BASE_DIR, ".env")
 
 if os.path.isfile(env_file):
     env.read_env(env_file)
-elif os.getenv("TRAMPOLINE_CI", None): #export TRAMPOLINE_CI=true 每次打開treminal都要設定
+elif os.getenv("TRAMPOLINE_CI", None):
+    # not working because lack of firebase config
     placeholder = (
         f"SECRET_KEY=a\n"
         "GS_BUCKET_NAME=None\n"
@@ -56,10 +57,19 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    # 'rest_framework.authtoken',
     "activity",
     "django_user",
-    "auth_firebase"    
+    "auth_firebase",
+    #'auth_firebase.apps.AuthFirebaseConfig'
 ]
+# Test for authentication
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'auth_firebase.authentication.FirebaseAuthentication',
+#     ),
+# }
+#
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -166,3 +176,19 @@ else:
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# Firebase config
+FIREBASE_ACCOUNT_TYPE = env('FIREBASE_ACCOUNT_TYPE')
+FIREBASE_PROJECT_ID = env('FIREBASE_PROJECT_ID')
+FIREBASE_PRIVATE_KEY_ID = env('FIREBASE_PRIVATE_KEY_ID')
+FIREBASE_PRIVATE_KEY = env('FIREBASE_PRIVATE_KEY')
+FIREBASE_CLIENT_EMAIL = env('FIREBASE_CLIENT_EMAIL')
+FIREBASE_CLIENT_ID = env('FIREBASE_CLIENT_ID')
+FIREBASE_AUTH_URI = env('FIREBASE_AUTH_URI')
+FIREBASE_TOKEN_URI = env('FIREBASE_TOKEN_URI')
+FIREBASE_AUTH_PROVIDER_X509_CERT_URL = env('FIREBASE_AUTH_PROVIDER_X509_CERT_URL')
+FIREBASE_CLIENT_X509_CERT_URL = env('FIREBASE_CLIENT_X509_CERT_URL')
+FIREBASE_TEST_USER_UID = env('FIREBASE_TEST_USER_UID')
+FIREBASE_TEST_USER_EMAIL = env('FIREBASE_TEST_USER_EMAIL')
+FIREBASE_TEST_USER_PASSWORD = env('FIREBASE_TEST_USER_PASSWORD')

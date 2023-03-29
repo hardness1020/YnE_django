@@ -27,7 +27,9 @@ class FirebaseAuthentication(BaseAuthentication):
     """override authenticate method and write our custom firebase authentication."""
     def authenticate(self, request):
         """Get the authorization Token, It raise exception when no authorization Token is given"""
-        auth_header = request.META.get("HTTP_AUTHORIZATION")
+        # print(request.headers)
+        
+        auth_header = request.headers.get("HTTP_AUTHORIZATION")
         if not auth_header:
             raise exceptions.NoAuthToken("No auth token provided")
             """Decoding the Token It rasie exception when decode failed."""

@@ -36,8 +36,8 @@ class ActivityViewSet(viewsets.GenericViewSet):
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializers
     pagination_class = ActivityPages
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [FirebaseAuthentication]
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [FirebaseAuthentication]
     
     # GET
     def list(self , request):
@@ -165,8 +165,8 @@ class ActivityViewSet(viewsets.GenericViewSet):
 class ActivityCommentViewSet(viewsets.GenericViewSet):
     queryset = ActivityComment.objects.all()
     serializer_class = ActivityCommentSerializers
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [FirebaseAuthentication]
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [FirebaseAuthentication]
     
     def create(self , request, pk=None):
         django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
@@ -207,8 +207,8 @@ class ActivityLocationViewSet(viewsets.GenericViewSet):
     queryset = ActivityLocation.objects.all()
     pagination_class = ActivityPages
     serializer_class = ActivityLocationSerializers
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [FirebaseAuthentication]
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [FirebaseAuthentication]
     
     def list(self , request):
         activities_location_list = self.get_queryset()

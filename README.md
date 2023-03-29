@@ -50,17 +50,15 @@ pip3 install -r requirements.txt
 ## 🎈 Local Development <a name="usage"></a>
 Doc: https://cloud.google.com/python/django/flexible-environment#linuxmacos_2
 1.  - **Development on Local Machine SQLite Database**
-        1. Setting up the environment variable
-            ``` 
-            export TRAMPOLINE_CI=True
-            ```
+        1.  Must have .env file in the root directory
     -  **Development on Google App Engine with cloud SQL**
-        1.  Select the project yne-django-dev and django_user account and then initiate authentication (setup once on your local machine)
+        1.  Must to move .env file not in the root directory
+        2.  Select the project yne-django-dev and user account and then initiate authentication (setup once on your local machine)
             ``` 
             gcloud init
             gcloud auth application-default login
             ```
-        2.  Establish a connection from your local computer to your Cloud SQL instance
+        3.  Establish a connection from your local computer to your Cloud SQL instance. 
             - Create another terminal and run the following command (download the cloud-sql-proxy from https://cloud.google.com/sql/docs/mysql/sql-proxy)
               ```
               ./cloud-sql-proxy yne-django-dev:asia-east1:yne-django-dev
@@ -70,22 +68,19 @@ Doc: https://cloud.google.com/python/django/flexible-environment#linuxmacos_2
               export GOOGLE_CLOUD_PROJECT=yne-django-dev
               export USE_CLOUD_SQL_AUTH_PROXY=true
               ```
-    - Shift the development environment should reset the environment variable to ensure that the app is deployed by the correct settings
-        ``` 
-        export TRAMPOLINE_CI=False
-        ```
-  1.  Run the following command to start the server
-      ```
-      python3 manage.py makemigrations
-      python3 manage.py migrate
-      python3 manage.py collectstatic
-      python3 manage.py runserver
-      ```
-      Then go to http://localhost:8000/ to see the app running
+
+2.  Run the following command to start the server
+    ```
+    python3 manage.py makemigrations
+    python3 manage.py migrate
+    python3 manage.py collectstatic
+    python3 manage.py runserver
+    ```
+    Then go to http://localhost:8000/ to see the app running
 
 
 ## 🔧 Running the Tests <a name = "tests"></a>
-1. Done first part of [Local Development ](#-local-development-)
+1. Done first part of [Local Development ](#-local-development-).
 2.  - Recommended to **use the debug toolbar to run the tests**
     - Or use CLI. Run all the tests
       ```
@@ -112,7 +107,7 @@ export SETTINGS_NAME=yne_django_settings
 ``` -->
 
 ### Development <a name = "development"></a>
-Select the project yne-django-dev and django_user account
+Select the project yne-django-dev and user account
 ``` 
 gcloud init
 ```
@@ -126,7 +121,7 @@ gcloud app deploy ./app-dev.yaml
 ```
 
 ### Production <a name = "production"></a>
-Select the project yne-django and django_user account
+Select the project yne-django and user account
 ``` 
 gcloud init
 ```
