@@ -4,7 +4,6 @@
     // 如需詳細資訊，請瀏覽: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-    
         {
             "name": "Run: Django Local DB",
             "type": "python",
@@ -13,8 +12,8 @@
             "args": [
                 "runserver",
             ],
-            "env": {
-                "TRAMPOLINE_CI": "True",},
+            // "env": {
+            //     "TRAMPOLINE_CI": "True",},
             "django": true,
         },
         {
@@ -24,10 +23,10 @@
             "program": "${workspaceFolder}/manage.py",
             "args": [
                 "test",
-                // "django_user"
+                // "user"
             ],
-            "env": {
-                "TRAMPOLINE_CI": "True",},
+            // "env": {
+            //     "TRAMPOLINE_CI": "True",},
             "django": true
         },
         {
@@ -50,7 +49,7 @@
             "program": "${workspaceFolder}/manage.py",
             "args": [
                 "test",
-                // "django_user"
+                // "user"
             ],
             "env": {
                 "GOOGLE_CLOUD_PROJECT": "yne-django-dev",
