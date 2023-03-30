@@ -64,11 +64,11 @@ INSTALLED_APPS = [
     #'auth_firebase.apps.AuthFirebaseConfig'
 ]
 # Test for authentication
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'auth_firebase.authentication.FirebaseAuthentication',
-    ),
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'auth_firebase.authentication.FirebaseAuthentication',
+#     ),
+# }
 #
 
 MIDDLEWARE = [
