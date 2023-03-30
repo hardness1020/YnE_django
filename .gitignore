@@ -12,3 +12,6 @@ media
 .env
 cloud-sql-proxy
 google-cloud-sdk
+
+# Mac OS
+.DS_Store
