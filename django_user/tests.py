@@ -97,10 +97,10 @@ class UserTests(TestCase):
         """
         Test DjangoUser List
         """  
-        response = self.client.get(f'/django_user/')
+        response = self.client.get(f'/django_user/?page={1}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['results'][0]['name'], 'test_user1')
-        self.assertEqual(response.data['results'][1]['name'], 'test_user2')
+        self.assertEqual(response.data['data'][0]['name'], 'test_user1')
+        self.assertEqual(response.data['data'][1]['name'], 'test_user2')
         
     # OK
     def test_user_retrieve(self):
@@ -110,9 +110,9 @@ class UserTests(TestCase):
         response = self.client.get(f'/django_user/{self.user1.id}/')
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], 'test_user1')
-        self.assertEqual(response.data['hobbies_num'], 1)
-        self.assertEqual(response.data['introduction'], 'test_user1_introduction')
+        self.assertEqual(response.data['data']['name'], 'test_user1')
+        self.assertEqual(response.data['data']['hobbies_num'], 1)
+        self.assertEqual(response.data['data']['introduction'], 'test_user1_introduction')
     
     # OK
     def test_user_destroy(self):
@@ -122,7 +122,24 @@ class UserTests(TestCase):
         response = self.client.delete(f'/django_user/{self.user1.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], 'DjangoUser deleted successfully')
-        
+    
+    # OK
+    def test_user_suggest(self):
+        """
+        Test DjangoUser Suggest
+        """
+        suggest_user = DjangoUser.objects.create(uid='suggest_user_uid',
+                                                 name='suggest_user',
+                                                 gender='1',
+                                                 introduction='Should get this suggest user')
+        suggest_user.hobbies.add(self.hobby1)
+        suggest_user.save()
+        response = self.client.post(f'/django_user/{self.user1.id}/suggest_other_user/', data={
+            'existed_users_id': [self.user1.id, self.user2.id]
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['data']['name'], 'suggest_user')
+        self.assertEqual(response.data['data']['introduction'], 'Should get this suggest user')
 
 class UserHobbyTests(TestCase):
     def setUp(self):
@@ -178,10 +195,10 @@ class UserHobbyTests(TestCase):
         """
         Test DjangoUser Hobby List
         """
-        response = self.client.get(f'/django_user/hobby/')
+        response = self.client.get(f'/django_user/hobby/?page={1}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['results'][0]['name'], 'test_hobby1')
-        self.assertEqual(response.data['results'][1]['name'], 'test_hobby2')
+        self.assertEqual(response.data['data'][0]['name'], 'test_hobby1')
+        self.assertEqual(response.data['data'][1]['name'], 'test_hobby2')
         
     # OK
     def test_user_hobby_retrieve(self):
@@ -190,9 +207,9 @@ class UserHobbyTests(TestCase):
         """
         response = self.client.get(f'/django_user/hobby/{self.hobby1.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], 'test_hobby1')
-        self.assertEqual(response.data['all_users'][0]['name'], 'test_user1')
-        self.assertEqual(response.data['all_users_num'], 2)
+        self.assertEqual(response.data['data']['name'], 'test_hobby1')
+        self.assertEqual(response.data['data']['all_users'][0]['name'], 'test_user1')
+        self.assertEqual(response.data['data']['all_users_num'], 2)
         
     # OK
     def test_user_hobby_destroy(self):
@@ -257,10 +274,10 @@ class UserJobTests(TestCase):
         """
         Test DjangoUser Job List
         """
-        response = self.client.get(f'/django_user/job/')
+        response = self.client.get(f'/django_user/job/?page={1}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['results'][0]['name'], 'test_job1')
-        self.assertEqual(response.data['results'][1]['name'], 'test_job2')
+        self.assertEqual(response.data['data'][0]['name'], 'test_job1')
+        self.assertEqual(response.data['data'][1]['name'], 'test_job2')
     
     # OK
     def test_user_job_retrieve(self):
@@ -269,9 +286,9 @@ class UserJobTests(TestCase):
         """
         response = self.client.get(f'/django_user/job/{self.job1.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], 'test_job1')
-        self.assertEqual(response.data['all_users_num'] , 2)
-        self.assertEqual(response.data['all_users'][0]['name'], 'test_user1')
+        self.assertEqual(response.data['data']['name'], 'test_job1')
+        self.assertEqual(response.data['data']['all_users_num'] , 2)
+        self.assertEqual(response.data['data']['all_users'][0]['name'], 'test_user1')
         
     # OK
     def test_user_job_destroy(self):

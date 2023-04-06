@@ -1,14 +1,15 @@
 from rest_framework import serializers
 from activity.models import ActivityParticipantAssociation , Activity , ActivityCategory , ActivityComment , ActivityLikedByPeopleAssociation , ActivityLocation
-# from django_user.serializers import UserShortSerializers, UserMediumSerializers
+
 
 #
 class ActivityCommentSerializers(serializers.ModelSerializer):
     id = serializers.CharField()
-    
+    comment_time = serializers.CharField()
+    last_modified_time = serializers.CharField()
     class Meta:
         model = ActivityComment
-        fields = ['id' , 'content' , 'author' , 'belong_activity' , 'comment_time']     #all
+        fields = ['id' , 'content' , 'author' , 'belong_activity' , 'comment_time' , 'last_modified_time']     #all
 
 class ActivityCategorySerializers(serializers.ModelSerializer):
     id = serializers.CharField()
@@ -46,12 +47,13 @@ class ActivityMediumSerializers(ActivityShortSerializers):
     categories = ActivityCategorySerializers(many=True)
     # host_basic = UserShortSerializers(source='host') may happened circluar import error
     # host_image
-    host_name = serializers.SerializerMethodField()
+    from django_user.serializers import UserShortForActivitySerializers
+    host = UserShortForActivitySerializers()
     class Meta:
         model = Activity
         fields = ['id' , 'start_date' , 'end_date' , 'title' , 'location',
                   'participants_num' , 'categories' , 'comments_num' , 'likes_num',
-                  'host', 'host_name']
+                  'host']
         
     def get_comments_num(self , obj):
         return obj.comments.all().count()
@@ -63,10 +65,12 @@ class ActivityMediumSerializers(ActivityShortSerializers):
 class ActivitySerializers(ActivityMediumSerializers):
     id = serializers.CharField()
     comments = ActivityCommentSerializers(many=True)
-    # host_detail = UserMediumSerializers(source='host') may happened circluar import error
+    from django_user.serializers import UserShortForActivitySerializers
+    participants = UserShortForActivitySerializers(many=True)
+    liked_users = UserShortForActivitySerializers(many=True)
     class Meta:
         model = Activity
         fields = ['id' , 'start_date' , 'end_date' , 'title' , 'location',
                   'participants_num' , 'categories' , 'comments_num' , 'likes_num',
-                  'host', 'host_name' , 'description' , 'participants' , 'liked_users',
+                  'host', 'description' , 'participants' , 'liked_users',
                   'comments']

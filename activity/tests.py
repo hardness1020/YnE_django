@@ -31,6 +31,7 @@ class ActivityTests(TestCase):
                                                description="description",
                                                host=self.django_user)
         self.activity.categories.add(self.category)
+        self.activity.participants.add(self.django_user)
         self.activity.save()
     
     def test_activity_list(self):
@@ -43,12 +44,12 @@ class ActivityTests(TestCase):
                                                location=self.location,
                                                description="description",
                                                host=self.django_user)
-        response = self.client.get('/activity/')
+        response = self.client.get(f'/activity/?page={1}')
         self.assertEqual(response.status_code , status.HTTP_200_OK)
-        self.assertEqual(response.data['results'][0]['host_name'] , "test_user")
-        self.assertEqual(response.data['results'][0]['location']['name'] , "test_location")
-        self.assertEqual(response.data['results'][0]['categories'][0]['name'] , "test_category")
-        self.assertEqual(response.data['results'][1]['title'] , "title_2")
+        self.assertEqual(response.data['data'][0]['host']['name'] , "test_user")
+        self.assertEqual(response.data['data'][0]['location']['name'] , "test_location")
+        self.assertEqual(response.data['data'][0]['categories'][0]['name'] , "test_category")
+        self.assertEqual(response.data['data'][1]['title'] , "title_2")
     
     # OK
     def test_activity_retrieve(self):
@@ -57,9 +58,10 @@ class ActivityTests(TestCase):
         """
         response = self.client.get(f'/activity/{self.activity.id}/')
         self.assertEqual(response.status_code , status.HTTP_200_OK)
-        self.assertEqual(response.data['host_name'] , "test_user")
-        self.assertEqual(response.data['location']['name'] , "test_location")
-        self.assertEqual(response.data['categories'][0]['name'] , "test_category")
+        self.assertEqual(response.data['data']['host']['name'] , "test_user")
+        self.assertEqual(response.data['data']['location']['name'] , "test_location")
+        self.assertEqual(response.data['data']['categories'][0]['name'] , "test_category")
+        self.assertEqual(response.data['data']['participants'][0]['name'] , "test_user")
     # OK
     def test_activity_create(self):
         """
@@ -76,12 +78,11 @@ class ActivityTests(TestCase):
         })
         
         self.assertEqual(response.status_code , status.HTTP_200_OK)
-        self.assertEqual(response.data['host_name'] , "test_user")
-        self.assertEqual(response.data['title'] , "test_title")
-        self.assertEqual(response.data['participants_num'] , 1)
-        self.assertEqual(response.data['location']['name'] , "test_location")
-        self.assertEqual(response.data['categories'][0]['id'] , '1')
-        self.assertEqual(response.data['categories'][0]['name'] , "test_category")
+        self.assertEqual(response.data['data']['host']['name'] , "test_user")
+        self.assertEqual(response.data['data']['title'] , "test_title")
+        self.assertEqual(response.data['data']['participants_num'] , 1)
+        self.assertEqual(response.data['data']['location']['name'] , "test_location")
+        self.assertEqual(response.data['data']['categories'][0]['name'] , "test_category")
     
     
     # OK
@@ -152,8 +153,7 @@ class ActivityTests(TestCase):
         self.assertEqual(response.status_code , status.HTTP_200_OK)
         self.assertEqual(response.data['message'] , f'{self.django_user.name} likes the {self.activity.title} activity.')
         self.assertEqual(response.data['data']['likes_num'] , 1)
-        self.assertEqual(response.data['data']['liked_users'][0] , self.django_user.id)
-        self.assertEqual(response.data['status'], 200)
+        self.assertEqual(response.data['data']['liked_users'][0]['name'] , self.django_user.name)
         
     # OK
     def test_activity_unliked(self):
@@ -170,9 +170,27 @@ class ActivityTests(TestCase):
         self.assertEqual(response.data['message'] , f'{self.django_user.name} unlikes the {self.activity.title} activity.')
         self.assertEqual(response.data['data']['likes_num'] , 0)
         self.assertEqual(response.data['status'], 200)
+    
+    # OK
+    def test_activity_liked_unliked(self):
+        """
+        Test liked and unliked Activity
+        """
+        # like
+        response = self.client.put(f'/activity/{self.activity.id}/liked_unliked/' , data={
+            'user_id':self.django_user.id
+        })
+        self.assertEqual(response.status_code , status.HTTP_200_OK)
+        self.assertEqual(response.data['message'] , f'{self.django_user.name} likes the {self.activity.title} activity.')
+        # unlike if calls api again
+        response = self.client.put(f'/activity/{self.activity.id}/liked_unliked/' , data={
+            'user_id':self.django_user.id
+        })
+        self.assertEqual(response.status_code , status.HTTP_200_OK)
+        self.assertEqual(response.data['message'] , f'{self.django_user.name} unlikes the {self.activity.title} activity.')
         
-    # Not Done
-    def test_get_activity_comments(self):
+    # OK
+    def test_activity_comments(self):
         """
         Test get all comments of Activity
         """
@@ -187,6 +205,74 @@ class ActivityTests(TestCase):
         self.assertEquals(response.data['data'][0]['content'] , "test_content1")
         self.assertEquals(response.data['data'][1]['content'] , "test_content2")
         self.assertEqual(response.data['data'][0]['author'], self.django_user.id)
+    
+    # OK
+    def test_activity_participate(self):
+        """
+        Test user participate activity
+        """
+        django_user2 = DjangoUser.objects.create(uid="test_user2_uid",
+                                                 name="test_user2")
+        response = self.client.put(f'/activity/{self.activity.id}/participate/' , data={
+            'user_id':django_user2.id
+            })
+        self.assertEqual(response.status_code , status.HTTP_200_OK)
+        self.assertEqual(response.data['message'] , f'{django_user2.name} participates the {self.activity.title} activity.')
+        self.assertEqual(response.data['data']['participants_num'] , 2)
+     
+     # OK
+    def test_activity_near_activities(self):
+        """
+        Test get near activities
+        """
+        # create more activities in same location
+        activity2 = Activity.objects.create(start_date="start_date",
+                                               end_date="end_date",
+                                               title="Near activity1",
+                                               location=self.location,
+                                               description="description",
+                                               host=self.django_user)
+        activity3 = Activity.objects.create(start_date="start_date",
+                                               end_date="end_date",
+                                               title="Near activity2",
+                                               location=self.location,
+                                               description="description",
+                                               host=self.django_user)
+        response = self.client.get(f'/activity/{self.activity.id}/near_activities/')
+        
+        self.assertEqual(response.status_code , status.HTTP_200_OK)
+        self.assertEqual(response.data['data'][0]['title'] , "Near activity1")
+        self.assertEqual(response.data['data'][1]['title'] , "Near activity2")
+    
+    # OK
+    def test_activity_similar_activities(self):
+        """
+        Test get similar activities
+        """
+        activity2 = Activity.objects.create(start_date="start_date",
+                                               end_date="end_date",
+                                               title="Similar activity1",
+                                               location=self.location,
+                                               description="description",
+                                               host=self.django_user)
+        activity3 = Activity.objects.create(start_date="start_date",
+                                               end_date="end_date",
+                                               title="Similar activity2",
+                                               location=self.location,
+                                               description="description",
+                                               host=self.django_user)
+        activity2.categories.add(self.category)
+        activity3.categories.add(self.category)
+        activity2.save()
+        activity3.save()
+        response = self.client.get(f'/activity/{self.activity.id}/similar_activities/')
+        
+        self.assertEqual(response.status_code , status.HTTP_200_OK)
+        self.assertEqual(response.data['data'][0]['title'] , "Similar activity2")
+        self.assertEqual(response.data['data'][1]['title'] , "Similar activity1")
+        
+        
+        
         
 class ActivityCommentTests(TestCase):
     def setUp(self):
@@ -319,11 +405,11 @@ class ActivityLocationTests(TestCase):
         Test list ActivityLocation
         """
         location2 = ActivityLocation.objects.create(name="test_location2")
-        response = self.client.get(f'/activity/location/')
+        response = self.client.get(f'/activity/location/?page={1}')
         
         self.assertEqual(response.status_code , status.HTTP_200_OK)
-        self.assertEqual(response.data['results'][0]['name'] , 'test_location')
-        self.assertEqual(response.data['results'][1]['name'] , 'test_location2')
+        self.assertEqual(response.data['data'][0]['name'] , 'test_location')
+        self.assertEqual(response.data['data'][1]['name'] , 'test_location2')
     
     # OK
     def test_activity_location_retrieve(self):
@@ -333,7 +419,7 @@ class ActivityLocationTests(TestCase):
         response = self.client.get(f'/activity/location/{self.location.id}/')
         
         self.assertEqual(response.status_code , status.HTTP_200_OK)
-        self.assertEqual(response.data['name'] , self.location.name)
+        self.assertEqual(response.data['data']['name'] , self.location.name)
         
     # OK
     def test_activity_location_update(self):

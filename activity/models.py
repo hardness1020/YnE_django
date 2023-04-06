@@ -25,14 +25,14 @@ class Activity(models.Model):
     end_date = models.CharField(max_length=50)
     title = models.CharField(max_length=50)
     description = models.TextField(max_length = 1000)
-    host = models.ForeignKey('django_user.DjangoUser', related_name = 'host_activities',on_delete=models.CASCADE)
+    host = models.ForeignKey('django_user.DjangoUser', related_name='host_activities',on_delete=models.CASCADE)
     location = models.ForeignKey('ActivityLocation', related_name='all_activities', on_delete=models.CASCADE)
     
-    categories = models.ManyToManyField(ActivityCategory, blank = True)
-    participants = models.ManyToManyField('django_user.DjangoUser' , through = ActivityParticipantAssociation,
-                                          related_name = 'participating_activities' , blank = True)
+    categories = models.ManyToManyField(ActivityCategory, related_name='all_activities', blank = True)
+    participants = models.ManyToManyField('django_user.DjangoUser' , through=ActivityParticipantAssociation,
+                                          related_name='participating_activities' , blank = True)
     liked_users = models.ManyToManyField('django_user.DjangoUser', through = ActivityLikedByPeopleAssociation,
-                                          related_name = 'liked_activities' , blank = True)
+                                          related_name='liked_activities' , blank = True)
     
 
 

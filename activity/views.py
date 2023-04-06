@@ -28,8 +28,8 @@ class ActivityPages(PageNumberPagination):
                 'next': self.get_next_link(),
                 'previous': self.get_previous_link()
             },
-            'count': self.page.paginator.count,
-            'results': data
+            'pages_total': str(self.page.paginator.num_pages),
+            'data': data
         })
 
 class ActivityViewSet(viewsets.GenericViewSet):
@@ -57,7 +57,7 @@ class ActivityViewSet(viewsets.GenericViewSet):
         """
         activity = self.get_object()
         serializer = ActivitySerializers(activity)
-        return Response(serializer.data)
+        return Response({'data':serializer.data})
     
     # POST
     def create(self , request, pk=None):
@@ -82,7 +82,7 @@ class ActivityViewSet(viewsets.GenericViewSet):
             
         new_activity.save()
         serializers = ActivitySerializers(new_activity)
-        return Response(data=serializers.data)
+        return Response({'data':serializers.data})
     
     #PUT
     def update(self , request, pk=None, *args, **kwargs):
@@ -113,8 +113,7 @@ class ActivityViewSet(viewsets.GenericViewSet):
         activity.save()
         serializer = ActivitySerializers(activity)
         return Response({'message':"Activity updated successfully.",
-                         'data':serializer.data},
-                         status=200)
+                         'data':serializer.data})
 
     #DELETE
     def destroy(self , request, pk=None, *args, **kwargs):
@@ -128,12 +127,13 @@ class ActivityViewSet(viewsets.GenericViewSet):
         return Response({'message':'Delete activity successfully.',
                          'status':200})
     
-    # TODO: Visibliity -> If django_user hasn't liked the activity, he can't access this function
     @action(detail=True , methods=['put'])
     def unliked(self , request, pk=None):
         django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
         activity = self.get_object()
-        
+        # if django_user.id not in activity.liked_users.values_list('id', flat=True):
+        #     return Response({'message':'You haven\'t liked this activity.',
+        #                      'status':403})
         activity.liked_users.remove(django_user)
         activity.save()
         serializer = ActivitySerializers(activity)
@@ -153,6 +153,22 @@ class ActivityViewSet(viewsets.GenericViewSet):
                          'status':200,
                          'data':serializer.data})
         
+    @action(detail=True , methods=['put'])
+    def liked_unliked(self, request , pk=None):
+        activity = self.get_object()
+        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
+        
+        # if not liked the activity yet
+        if django_user not in activity.liked_users.all():
+            activity.liked_users.add(django_user)
+            activity.save()
+            return Response({'message':f'{django_user.name} likes the {activity.title} activity.'})
+        # if the user already liked the activity
+        else:
+            activity.liked_users.remove(django_user)
+            activity.save()
+            return Response({'message':f'{django_user.name} unlikes the {activity.title} activity.'})
+        
     @action(detail=True , methods=['get'])
     def comments(self , request, pk=None):
         activity = self.get_object()
@@ -161,6 +177,40 @@ class ActivityViewSet(viewsets.GenericViewSet):
         return Response({'message':'All comments of this activity.',
                          'status':200,
                          'data':serializer.data})
+        
+    @action(detail=True , methods=['put'])
+    def participate(self , request, pk=None):
+        activity = self.get_object()
+        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
+        
+        activity.participants.add(django_user)
+        activity.save()
+        serializer = ActivitySerializers(activity)
+        return Response({'message':f'{django_user.name} participates the {activity.title} activity.',
+                         'data':serializer.data})
+    
+    @action(detail=True , methods=['get'])
+    def near_activities(self, request, pk=None):
+        activity = self.get_object()
+        near_activities_list = activity.location.all_activities.all()
+        
+        near_activities_list = self.paginate_queryset(near_activities_list)
+        near_activities_list.remove(activity)
+        serializer = ActivitySerializers(near_activities_list, many=True)
+        return self.get_paginated_response(serializer.data)
+    
+    @action(detail=True , methods=['get'])
+    def similar_activities(self, request, pk=None):
+        activity = self.get_object()
+        similar_activities_list = []
+        for category in activity.categories.all():
+            for similar_activity in category.all_activities.all():
+                similar_activities_list.append(similar_activity)
+        
+        similar_activities_list = self.paginate_queryset(similar_activities_list)
+        similar_activities_list.remove(activity)
+        serializer = ActivitySerializers(similar_activities_list, many=True)
+        return self.get_paginated_response(serializer.data)
     
 class ActivityCommentViewSet(viewsets.GenericViewSet):
     queryset = ActivityComment.objects.all()
@@ -196,10 +246,6 @@ class ActivityCommentViewSet(viewsets.GenericViewSet):
     def destroy(self , request, pk=None, *args, **kwargs):
         django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
         activitycomment = self.get_object()
-        # TODO: Authentication
-        # if(django_user.id != activitycomment.author.id):
-        #     return Response(status=403)
-        
         activitycomment.delete()
         return Response({'message':'Delete comment successfully.'})
 
@@ -213,7 +259,6 @@ class ActivityLocationViewSet(viewsets.GenericViewSet):
     def list(self , request):
         activities_location_list = self.get_queryset()
         activities_location_list = self.paginate_queryset(activities_location_list)  
-                                        # 需要實作ActivityLocation 的Pagination嗎？
         serializer = ActivityLocationSerializers(activities_location_list , many=True)
         
         return self.get_paginated_response(serializer.data)
@@ -221,7 +266,7 @@ class ActivityLocationViewSet(viewsets.GenericViewSet):
     def retrieve(self , request , pk=None):
         activity_location = self.get_object()
         serializer = ActivityLocationSerializers(activity_location)
-        return Response(serializer.data)
+        return Response({'data':serializer.data})
     
     def create(self , request, pk=None):
         name = request.data.get('name')

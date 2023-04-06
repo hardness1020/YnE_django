@@ -14,7 +14,19 @@ class UserShortSerializers(serializers.ModelSerializer):
         
     def get_gender(self, obj):
         return obj.get_gender_display()
+
+class UserShortForActivitySerializers(serializers.ModelSerializer):
+    id = serializers.CharField()
+    name = serializers.CharField()
+    gender = serializers.SerializerMethodField()
+    # image
     
+    class Meta:
+        model = DjangoUser
+        fields = ['id' , 'name' , 'gender']
+        
+    def get_gender(self, obj):
+        return obj.get_gender_display()
 #
 
 class UserHobbySerializers(serializers.ModelSerializer):
@@ -72,7 +84,7 @@ class UserSerializers(UserMediumSerializers):
     class Meta:
         model = DjangoUser
         fields = ['id', 'name', 'gender', 'jobs', 'hobbies', 'host_activities', 'host_activities_num',
-                  'introduction' , 'hobbies', 'hobbies_num', 'participating_activities',
+                  'introduction', 'hobbies_num', 'participating_activities',
                   'participating_activities_num','liked_activities' , 'liked_activities_num' , 'written_comments',
                   'written_comments_num']
     def get_hobbies_num(self , obj):

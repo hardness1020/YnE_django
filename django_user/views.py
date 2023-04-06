@@ -3,6 +3,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Q, Count
 from django.db import transaction
+import random
 from rest_framework import viewsets #支援以下功能：{list , creat , retrieve , update , partial_update , destory}
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
@@ -27,8 +28,8 @@ class UserPages(PageNumberPagination):
                 'next': self.get_next_link(),
                 'previous': self.get_previous_link()
             },
-            'count': self.page.paginator.count,
-            'results': data
+            'pages_total': str(self.page.paginator.num_pages),
+            'data': data
         })
         
 class UserViewSet(viewsets.GenericViewSet):
@@ -48,7 +49,7 @@ class UserViewSet(viewsets.GenericViewSet):
     def retrieve(self, request , pk=None):
         django_user = self.get_object()
         serializers = UserSerializers(django_user)
-        return Response(data=serializers.data)
+        return Response({'data':serializers.data})
     
     
     #POST
@@ -102,7 +103,31 @@ class UserViewSet(viewsets.GenericViewSet):
         django_user = self.get_object()
         django_user.delete()
         return Response({'message':"DjangoUser deleted successfully"})
-
+    
+    
+    @action(detail=True, methods=['post'])
+    def suggest_other_user(self , request , *args, **kwargs):
+        user = self.get_object()
+        existed_users_id = request.data.getlist('existed_users_id')
+        existed_users_id = [int(i) for i in existed_users_id]
+        alike_users_id = []
+        for hobby in user.hobbies.all():
+            for temp_user in hobby.all_users.all():
+                if temp_user.id not in existed_users_id:
+                    alike_users_id.append(temp_user.id)
+        for job in user.jobs.all():
+            for temp_user in job.all_users.all():
+                if temp_user.id not in existed_users_id and temp_user.id not in alike_users_id:
+                    alike_users_id.append(temp_user.id)
+        # while alike_users_id[random.randint(0,len(alike_users_id)-1)] in existed_users_id:
+        while True:
+            random_user_id = alike_users_id[random.randint(0,len(alike_users_id)-1)]
+            if random_user_id not in existed_users_id:
+                break
+        serializer = UserSerializers(DjangoUser.objects.get(id=random_user_id))
+        return Response({'data':serializer.data})
+        
+            
 class UserHobbyViewSet(viewsets.GenericViewSet):
     queryset = UserHobby.objects.all()
     serializer_class = UserHobbySerializers
@@ -120,7 +145,7 @@ class UserHobbyViewSet(viewsets.GenericViewSet):
     def retrieve(self , request, pk=None):
         userhobby = self.get_object()
         serializers = UserHobbySerializers(userhobby)
-        return Response(serializers.data)
+        return Response({'data':serializers.data})
     
     #POST
     def create(self , request, pk=None):
@@ -163,7 +188,7 @@ class UserJobViewSet(viewsets.GenericViewSet):
     def retrieve(self , request, pk=None):
         userjob = self.get_object()
         serializers = UserJobSerializers(userjob)
-        return Response(serializers.data)
+        return Response({'data':serializers.data})
     
     #POST
     def create(self , request, pk=None):
