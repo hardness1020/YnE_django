@@ -61,25 +61,31 @@ class ActivityViewSet(viewsets.GenericViewSet):
     
     # POST
     def create(self , request, pk=None):
-        django_user = DjangoUser.objects.get(id = request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
         start_date = request.data.get('start_date')
         end_date = request.data.get('end_date')
         title = request.data.get('title')
         location_id = request.data.get('location_id')
         description = request.data.get('description')
         categories_id = request.data.getlist('categories_id') 
+        try:
+            location = ActivityLocation.objects.get(id=location_id)
+        except Exception:
+            return Response({'message':"Location not found."} , status=401)
         new_activity = Activity.objects.create(start_date=start_date,
                                                end_date=end_date,
                                                title=title,
-                                               location=ActivityLocation.objects.get(id=location_id),
+                                               location=location,
                                                description=description,
                                                host=django_user)
         new_activity.save()
         #                                  
         new_activity.participants.add(django_user)
         for category_id in categories_id:
-            new_activity.categories.add(ActivityCategory.objects.get(id=category_id))
-            
+            try:
+                new_activity.categories.add(ActivityCategory.objects.get(id=category_id))
+            except Exception:
+                continue
         new_activity.save()
         serializers = ActivitySerializers(new_activity)
         return Response({'data':serializers.data})

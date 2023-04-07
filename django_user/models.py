@@ -5,8 +5,8 @@ from django.contrib.auth.models import AbstractUser
 # Create your models here.
 class DjangoUser(models.Model):
     class Gender(models.IntegerChoices):
-        MALE = 1, "Male"
-        FEMALE = 2, "Female"
+        MALE = 1, "M"
+        FEMALE = 2, "F"
         OTHER = 3 , "Other"
     #
     uid = models.CharField(max_length=50, unique=True, editable=False)

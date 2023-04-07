@@ -63,7 +63,7 @@ class UserTests(TestCase):
         response = self.client.post(f'/django_user/', data={
             'uid': 'test_user3_uid',
             'name': 'test_user3',
-            'gender':'1',
+            'gender':'F',
             'introduction':'test_user3_introduction',
             'hobbies_id':[self.hobby1.id , self.hobby2.id],
             'jobs_id':[self.job1.id , self.job2.id]
@@ -140,6 +140,14 @@ class UserTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['data']['name'], 'suggest_user')
         self.assertEqual(response.data['data']['introduction'], 'Should get this suggest user')
+        
+    # TODO: authentification part
+    # def test_hero_django_user(self):
+    #     """
+    #     Test getting the hero DjangoUser with frontend given token
+    #     """
+        
+        
 
 class UserHobbyTests(TestCase):
     def setUp(self):

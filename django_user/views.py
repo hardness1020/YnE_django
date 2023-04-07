@@ -10,6 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from auth_firebase.authentication import FirebaseAuthentication
+import firebase_admin.auth as auth
 
 from activity.models import (Activity , ActivityCategory , ActivityComment ,
                              ActivityLikedByPeopleAssociation , ActivityParticipantAssociation)
@@ -57,6 +58,11 @@ class UserViewSet(viewsets.GenericViewSet):
         uid = request.data.get('uid')
         name = request.data.get('name')
         gender = request.data.get('gender')
+        if gender == 'M':
+            gender = '1'
+        if gender == 'F':
+            gender = '2'
+        else: gender = '3'
         introduction = request.data.get('introduction')
         hobbies_id = request.data.getlist('hobbies_id')
         jobs_id = request.data.getlist('jobs_id')
@@ -79,6 +85,11 @@ class UserViewSet(viewsets.GenericViewSet):
         django_user = self.get_object()
         name = request.data.get('name')
         gender = request.data.get('gender')
+        if gender == 'M':
+            gender = '1'
+        if gender == 'F':
+            gender = '2'
+        else: gender = '3'
         introduction = request.data.get('introduction')
         hobbies_id = request.data.getlist('hobbies_id')
         jobs_id = request.data.getlist('jobs_id')
@@ -126,6 +137,15 @@ class UserViewSet(viewsets.GenericViewSet):
                 break
         serializer = UserSerializers(DjangoUser.objects.get(id=random_user_id))
         return Response({'data':serializer.data})
+    
+    # TODO: Firebase Authentication and using uid to get user
+    # @action(detail=True, methods=['get'])
+    # def hero_django_user(self , request , *args, **kwargs):
+    #     decoded_token = auth.verify_id_token(request.headers['Authorization'].split(' ')[1])
+    #     hero_django_user_uid = decoded_token['uid']
+    #     hero_django_user = DjangoUser.objects.get(uid=hero_django_user_uid)
+    #     serializer = UserSerializers(hero_django_user)
+    #     return Response({'data':serializer.data})
         
             
 class UserHobbyViewSet(viewsets.GenericViewSet):
