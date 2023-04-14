@@ -8,7 +8,7 @@
             "name": "Run: Django Local DB",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/manage.py",
+            "program": "${workspaceFolder}/yne/manage.py",
             "args": [
                 "runserver",
             ],
@@ -20,7 +20,7 @@
             "name": "Test: Django local DB",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/manage.py",
+            "program": "${workspaceFolder}/yne/manage.py",
             "args": [
                 "test",
                 // "user"
@@ -33,7 +33,7 @@
             "name": "Run: Django cloud dev DB",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/manage.py",
+            "program": "${workspaceFolder}/yne/manage.py",
             "args": [
                 "runserver",
             ],
@@ -46,7 +46,7 @@
             "name": "Test: Django cloud dev DB",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/manage.py",
+            "program": "${workspaceFolder}/yne/manage.py",
             "args": [
                 "test",
                 // "user"

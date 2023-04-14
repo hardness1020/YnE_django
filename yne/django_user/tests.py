@@ -8,7 +8,7 @@ from rest_framework.test import APIRequestFactory, APIClient
 from rest_framework import status
 import auth_firebase.authentication
 import firebase_admin.auth as auth
-from yne import settings
+import settings
 
 
 from django_user.models import DjangoUser , UserJob , UserHobby
