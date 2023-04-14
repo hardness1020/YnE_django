@@ -11,11 +11,15 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from auth_firebase.authentication import FirebaseAuthentication
 import firebase_admin.auth as auth
+from PIL import Image
+import uuid
+import os
 
 from activity.models import (Activity , ActivityCategory , ActivityComment ,
                              ActivityLikedByPeopleAssociation , ActivityParticipantAssociation)
 from django_user.models import (DjangoUser , UserHobby , UserJob)
 from django_user.serializers import UserSerializers  , UserShortSerializers , UserMediumSerializers, UserHobbySerializers , UserJobSerializers
+from django.conf import settings
 
 # Create your views here.
 class UserPages(PageNumberPagination):
@@ -146,8 +150,40 @@ class UserViewSet(viewsets.GenericViewSet):
     #     hero_django_user = DjangoUser.objects.get(uid=hero_django_user_uid)
     #     serializer = UserSerializers(hero_django_user)
     #     return Response({'data':serializer.data})
+    
+    @action(detail=True, methods=['patch'])
+    def update_avatar(self, request, pk=None):
+        user = self.get_object()
+        # Delete old avatar
+        try:
+            os.remove(user.avatar.path)
+        except:
+            pass
+        # Get new avatar and set the unique file
+        update_avatar = request.data.get('avatar')
+        filename = update_avatar.name.split('.')[0] + '_' + str(uuid.uuid4()) + '.' + update_avatar.name.split('.')[1]
         
-            
+        # Resize image
+        with Image.open(update_avatar) as img:
+            if img.format not in ['JPEG', 'PNG', 'GIF']:
+                return Response({'message':'Image format is not supported'} , status=400)
+            img.thumbnail((1024,1024))
+            resized_image = img.copy()
+        # Save the resized image to temp folder
+        temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+        with open(os.path.join(temp_dir, filename), 'wb') as f:
+            resized_image.save(f, format='JPEG')
+        # Remove the resized image file to the mdia/django)user/images folder
+        os.replace(os.path.join(temp_dir , filename),
+                   os.path.join(settings.MEDIA_ROOT, 'user', filename))
+        user.avatar = os.path.join('user', filename)
+        user.save()
+        
+        return Response({'message':'User avatar updated successfully'})
+        
+        
 class UserHobbyViewSet(viewsets.GenericViewSet):
     queryset = UserHobby.objects.all()
     serializer_class = UserHobbySerializers

@@ -9,6 +9,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from auth_firebase.authentication import FirebaseAuthentication
+import os
+import uuid
+from PIL import Image
+from django.conf import settings
 
 from activity.models import (Activity , ActivityParticipantAssociation,
                              ActivityCategory , ActivityComment, ActivityLikedByPeopleAssociation , ActivityLocation)
@@ -217,6 +221,34 @@ class ActivityViewSet(viewsets.GenericViewSet):
         similar_activities_list.remove(activity)
         serializer = ActivitySerializers(similar_activities_list, many=True)
         return self.get_paginated_response(serializer.data)
+    
+    @action(detail=True, methods=['patch'])
+    def update_avatar(self, request, pk=None):
+        activity = self.get_object()
+        try:
+            os.remove()
+        except:
+            pass
+        update_avatar = request.data.get('avatar')
+        filename = update_avatar.name.split('.')[0] + '_' + str(uuid.uuid4()) + '.' + update_avatar.name.split('.')[1]
+        with Image.open(update_avatar) as img:
+            if img.format not in ['JPEG', 'PNG', 'GIF']:
+                return Response({'message':'Image format is not supported'} , status=400)
+            img.thumbnail((1024,1024))
+            resized_image = img.copy()
+        # Save the resized image to temp folder
+        temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+        with open(os.path.join(temp_dir, filename), 'wb') as f:
+            resized_image.save(f, format='JPEG')
+        # Remove the resized image file to the mdia/django)user/images folder
+        os.replace(os.path.join(temp_dir , filename),
+                   os.path.join(settings.MEDIA_ROOT, 'activity', filename))
+        activity.avatar = os.path.join('activity', filename)
+        activity.save()
+        
+        return Response({'message':'Activity avatar updated successfully'})
     
 class ActivityCommentViewSet(viewsets.GenericViewSet):
     queryset = ActivityComment.objects.all()

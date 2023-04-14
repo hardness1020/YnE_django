@@ -10,7 +10,6 @@ class DjangoUser(models.Model):
         OTHER = 3 , "Other"
     #
     uid = models.CharField(max_length=50, unique=True, editable=False)
-    # TODO: ask what is avatar
     avatar = models.ImageField(upload_to='django_user/avatar/', blank=True, null=True)
     name = models.CharField(max_length = 50)
     # email = models.EmailField(max_length = 50, blank=True)
@@ -23,18 +22,12 @@ class DjangoUser(models.Model):
     #participatingactivities : DjangoUser.participanting_activities
     #likedactivities : DjangoUser.liked_activities
     
-
     
-    
-##  ##  ##  ##
-# django_user list by hobby 
 class UserHobby(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
         
 
-##  ##  ##  ##
-# django_user list by job
 class UserJob(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
