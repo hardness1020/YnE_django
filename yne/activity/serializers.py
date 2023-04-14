@@ -38,7 +38,7 @@ class ActivityShortSerializers(serializers.ModelSerializer):
                   'participants_num']
     
     def get_participants_num(self , obj):
-        return obj.participants.count()
+        return str(obj.participants.count())
         
 class ActivityMediumSerializers(ActivityShortSerializers):
     id = serializers.CharField()
@@ -56,9 +56,9 @@ class ActivityMediumSerializers(ActivityShortSerializers):
                   'host']
         
     def get_comments_num(self , obj):
-        return obj.comments.all().count()
+        return str(obj.comments.all().count())
     def get_likes_num(self , obj):
-        return obj.liked_users.count()
+        return str(obj.liked_users.count())
     def get_host_name(self , obj):
         return str(obj.host.name)
 
