@@ -61,8 +61,19 @@ INSTALLED_APPS = [
     "activity",
     "django_user",
     "auth_firebase",
-    #'auth_firebase.apps.AuthFirebaseConfig'
+    #'auth_firebase.apps.AuthFirebaseConfig',
+    "channels",
+    'chat'
 ]
+
+ASGI_APPLICATION = 'yne.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
+
 # Test for authentication
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': (
