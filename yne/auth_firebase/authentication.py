@@ -1,9 +1,11 @@
-from rest_framework.authentication import BaseAuthentication
-from auth_firebase import exceptions
-from django.contrib.auth.models import User
 import firebase_admin
 from firebase_admin import credentials, auth
+
+from django.contrib.auth.models import User
 from django.conf import settings
+from rest_framework.authentication import BaseAuthentication
+
+from . import exceptions
 
 
 """SETUP FIREBASE CREDENTIALS"""

@@ -1,20 +1,19 @@
 from io import BytesIO
 import json
+import firebase_admin.auth as auth
 # from PIL import Image 
 
+import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, APIClient
 from rest_framework import status
-import auth_firebase.authentication
-import firebase_admin.auth as auth
-import settings
 
-
-from django_user.models import DjangoUser , UserJob , UserHobby
-from activity.models import (Activity , ActivityCategory , ActivityComment,
-                             ActivityLikedByPeopleAssociation , ActivityLocation,
-                             ActivityParticipantAssociation)
+import yne.auth_firebase.authentication
+from yne.activity.models import (Activity , ActivityCategory , ActivityComment,
+                                 ActivityLikedByPeopleAssociation , ActivityLocation,
+                                 ActivityParticipantAssociation)
+from .models import DjangoUser , UserJob , UserHobby
 
 class UserTests(TestCase):
     def setUp(self):

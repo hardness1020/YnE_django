@@ -1,6 +1,7 @@
+from datetime import datetime, timedelta
+
 from django.shortcuts import render
 from django.utils import timezone
-from datetime import datetime, timedelta
 from django.db.models import Q, Count
 from django.db import transaction
 from rest_framework import viewsets #支援以下功能：{list , creat , retrieve , update , partial_update , destroy}
@@ -8,13 +9,13 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from auth_firebase.authentication import FirebaseAuthentication
 
-from activity.models import (Activity , ActivityParticipantAssociation,
+from yne.auth_firebase.authentication import FirebaseAuthentication
+from yne.django_user.models import (DjangoUser , UserJob , UserHobby)
+from .models import (Activity , ActivityParticipantAssociation,
                              ActivityCategory , ActivityComment, ActivityLikedByPeopleAssociation , ActivityLocation)
-from activity.serializers import (ActivityShortSerializers , ActivityMediumSerializers,
+from .serializers import (ActivityShortSerializers , ActivityMediumSerializers,
                                   ActivitySerializers , ActivityCommentSerializers , ActivityLocationSerializers)
-from django_user.models import (DjangoUser , UserJob , UserHobby )
 
 
 class ActivityPages(PageNumberPagination):

@@ -3,11 +3,11 @@ import os
 
 import environ
 from google.cloud import secretmanager
+from google.oauth2 import service_account
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 env = environ.Env(DEBUG=(bool, False))
 env_file = os.path.join(BASE_DIR, ".env")
@@ -15,7 +15,7 @@ env_file = os.path.join(BASE_DIR, ".env")
 if os.path.isfile(env_file):
     env.read_env(env_file)
 elif os.getenv("TRAMPOLINE_CI", None):
-    # not working because lack of firebase config
+    # not working because lack of firebase config, must have .env file
     placeholder = (
         f"SECRET_KEY=a\n"
         "GS_BUCKET_NAME=None\n"
@@ -26,8 +26,14 @@ elif os.getenv("TRAMPOLINE_CI", None):
 elif os.environ.get("GOOGLE_CLOUD_PROJECT", None):
     # Pull secrets from Google Secret Manager
     project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
+    
+    # Get the credentials from the environment file which is downloaded from GCP IAM
+    credentials = service_account.Credentials.from_service_account_file(
+        os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    )
 
-    client = secretmanager.SecretManagerServiceClient()
+    # Use the credentials to create a client to access the secret manager from GCP project
+    client = secretmanager.SecretManagerServiceClient(credentials=credentials)
     settings_name = os.environ.get("SETTINGS_NAME", "yne_django_settings")
     name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
     payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
@@ -57,12 +63,17 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    # 'rest_framework.authtoken',
-    "activity",
-    "django_user",
-    "auth_firebase",
-    #'auth_firebase.apps.AuthFirebaseConfig'
+    "channels",
+    
+    'yne.auth_firebase.apps.AuthFirebaseConfig',
+    'yne.django_user.apps.DjangoUserConfig',
+    'yne.activity.apps.ActivityConfig',
+    # "yne.auth_firebase",
+    # "yne.django_user",
+    # "yne.activity",
+    # "chat",
 ]
+
 # Test for authentication
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -81,12 +92,12 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "urls"
+ROOT_URLCONF = "yne.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, 'templates')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -99,7 +110,21 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "wsgi.application"
+
+
+# WSGI config 
+WSGI_APPLICATION = "yne.wsgi.application"
+
+# ASGI config
+ASGI_APPLICATION = "yne.asgi.application"
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [(os.getenv('REDIS_HOST', 'redis'), 6379)],
+        },
+    },
+}
 
 
 # Database
@@ -157,8 +182,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 # Define static storage via django-storages[google]
-STATIC_URL = "/static/"
+STATIC_URL = "yne/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+MEDIA_URL = "yne/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 if os.getenv("TRAMPOLINE_CI", None):
     # collect the static files in following path to STATIC_ROOT

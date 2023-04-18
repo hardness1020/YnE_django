@@ -28,6 +28,7 @@
 - [🚀 Deployment ](#-deployment-)
   - [Development ](#development-)
   - [Production ](#production-)
+- [🎉 Acknowledgements ](#-acknowledgements-)
 
 ## 🧐 About <a name = "about"></a>
 
@@ -50,9 +51,9 @@ pip3 install -r requirements.txt
 ## 🎈 Local Development <a name="usage"></a>
 Doc: https://cloud.google.com/python/django/flexible-environment#linuxmacos_2
 1.  - **Development on Local Machine SQLite Database**
-        1.  Must have .env file in the root directory
+        1.  Must **have** .env file in the root directory
     -  **Development on Google App Engine with cloud SQL**
-        1.  Must to move .env file not in the root directory
+        1.  Must **not have** .env file in the root directory
         2.  Select the project yne-django-dev and user account and then initiate authentication (setup once on your local machine)
             ``` 
             gcloud init
@@ -133,5 +134,8 @@ Deploy the app
 ```
 gcloud app deploy ./app-prod.yaml 
 ```
+
+## 🎉 Acknowledgements <a name = "acknowledgement"></a>
+- [Infrastructure](https://python.plainenglish.io/how-deploy-an-asgi-django-application-with-nginx-gunicorn-daphne-and-supervisor-on-ubuntu-server-dfd810f56274)
 
 
