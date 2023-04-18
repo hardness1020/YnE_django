@@ -69,7 +69,9 @@ class UserViewSet(viewsets.GenericViewSet):
         else: gender = '3'
         introduction = request.data.get('introduction')
         hobbies_id = request.data.getlist('hobbies_id')
+        hobbies_id = [int(x) for x in hobbies_id]
         jobs_id = request.data.getlist('jobs_id')
+        jobs_id = [int(x) for x in jobs_id]
         new_user = DjangoUser.objects.create(uid=uid,
                                        name=name,
                                        gender=gender,
@@ -96,8 +98,9 @@ class UserViewSet(viewsets.GenericViewSet):
         else: gender = '3'
         introduction = request.data.get('introduction')
         hobbies_id = request.data.getlist('hobbies_id')
+        hobbies_id = [int(x) for x in hobbies_id]
         jobs_id = request.data.getlist('jobs_id')
-        
+        jobs_id = [int(x) for x in jobs_id]
         django_user.name = name
         django_user.gender = gender
         django_user.introduction = introduction
@@ -117,6 +120,10 @@ class UserViewSet(viewsets.GenericViewSet):
     def destroy(self , request, pk=None,*args, **kwargs):
         django_user = self.get_object()
         django_user.delete()
+        if django_user.image:
+            if os.path.isfile(django_user.image.path):
+                os.remove(django_user.image.path)
+        
         return Response({'message':"DjangoUser deleted successfully"})
     
     
@@ -124,7 +131,7 @@ class UserViewSet(viewsets.GenericViewSet):
     def suggest_other_user(self , request , *args, **kwargs):
         user = self.get_object()
         existed_users_id = request.data.getlist('existed_users_id')
-        existed_users_id = [int(i) for i in existed_users_id]
+        existed_users_id = [int(x) for x in existed_users_id]
         alike_users_id = []
         for hobby in user.hobbies.all():
             for temp_user in hobby.all_users.all():
@@ -154,9 +161,8 @@ class UserViewSet(viewsets.GenericViewSet):
     @action(detail=True, methods=['patch'])
     def update_avatar(self, request, pk=None):
         user = self.get_object()
-        # Delete old avatar
         try:
-            os.remove(user.avatar.path)
+            original_avatar_path = user.avatar.path
         except:
             pass
         # Get new avatar and set the unique file
@@ -169,19 +175,35 @@ class UserViewSet(viewsets.GenericViewSet):
                 return Response({'message':'Image format is not supported'} , status=400)
             img.thumbnail((1024,1024))
             resized_image = img.copy()
+            
         # Save the resized image to temp folder
         temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
         if not os.path.exists(temp_dir):
             os.makedirs(temp_dir)
         with open(os.path.join(temp_dir, filename), 'wb') as f:
             resized_image.save(f, format='JPEG')
+        
+        if not os.path.exists(os.path.join(settings.MEDIA_ROOT, 'user')):
+            os.makedirs(os.path.join(settings.MEDIA_ROOT, 'user'))
+            
         # Remove the resized image file to the mdia/django)user/images folder
         os.replace(os.path.join(temp_dir , filename),
                    os.path.join(settings.MEDIA_ROOT, 'user', filename))
         user.avatar = os.path.join('user', filename)
         user.save()
         
+        # Delete old avatar
+        try:
+            os.remove(original_avatar_path)
+        except:
+            pass
+    
         return Response({'message':'User avatar updated successfully'})
+    
+    @action(detail=True, methods=['patch'])
+    def update_big_pic(self, request, pk=None):
+        # TODO: Update big pic
+        return Response({'message':'User big pic updated successfully'})
         
         
 class UserHobbyViewSet(viewsets.GenericViewSet):

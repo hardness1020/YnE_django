@@ -35,7 +35,7 @@ class Activity(models.Model):
     description = models.TextField(max_length = 1000)
     host = models.ForeignKey('django_user.DjangoUser', related_name='host_activities',on_delete=models.CASCADE)
     location = models.ForeignKey('ActivityLocation', related_name='all_activities', on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to='activity/avatar/', blank=True, null=True)
+    thumbnail = models.ImageField(upload_to='activity/thumbnail/', blank=True, null=True)
     
     categories = models.ManyToManyField(ActivityCategory, related_name='all_activities', blank = True)
     participants = models.ManyToManyField('django_user.DjangoUser' , through=ActivityParticipantAssociation,

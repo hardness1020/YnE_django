@@ -81,7 +81,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "yne.urls"
+ROOT_URLCONF = "urls"
 
 TEMPLATES = [
     {
@@ -99,7 +99,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "yne.wsgi.application"
+WSGI_APPLICATION = "wsgi.application"
 
 
 # Database
@@ -158,7 +158,10 @@ USE_TZ = True
 
 # Define static storage via django-storages[google]
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_ROOT = os.path.join(BASE_DIR, "yne","static")
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "yne", "media")
 
 if os.getenv("TRAMPOLINE_CI", None):
     # collect the static files in following path to STATIC_ROOT

@@ -65,13 +65,14 @@ class ActivityViewSet(viewsets.GenericViewSet):
     
     # POST
     def create(self , request, pk=None):
-        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=int(request.data.get('user_id')))
         start_date = request.data.get('start_date')
         end_date = request.data.get('end_date')
         title = request.data.get('title')
-        location_id = request.data.get('location_id')
+        location_id = int(request.data.get('location_id'))
         description = request.data.get('description')
-        categories_id = request.data.getlist('categories_id') 
+        categories_id = request.data.getlist('categories_id')
+        categories_id = [int(x) for x in categories_id]
         try:
             location = ActivityLocation.objects.get(id=location_id)
         except Exception:
@@ -97,7 +98,7 @@ class ActivityViewSet(viewsets.GenericViewSet):
     #PUT
     def update(self , request, pk=None, *args, **kwargs):
         activity = self.get_object()
-        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=int(request.data.get('user_id')))
         # 加上驗整 ->只有host才可以更改內容
         if(django_user.id != activity.host.id):
             return Response({'message':"You don't have permission to update this activity.",
@@ -107,9 +108,10 @@ class ActivityViewSet(viewsets.GenericViewSet):
         start_date = request.data.get('start_date')
         end_date = request.data.get('end_date')
         title = request.data.get('title')
-        location_id = request.data.get('location_id')
+        location_id = int(request.data.get('location_id'))
         description = request.data.get('description')
         categories_id = request.data.getlist('categories_id')
+        categories_id = [int(x) for x in categories_id]
         
         activity.start_date = start_date
         activity.end_date = end_date
@@ -127,19 +129,21 @@ class ActivityViewSet(viewsets.GenericViewSet):
 
     #DELETE
     def destroy(self , request, pk=None, *args, **kwargs):
-        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=int(request.data.get('user_id')))
         activity = self.get_object()
         if(django_user.id != activity.host.id):
             return Response({'message':'You don\'t have permission to delete this activity.',
                              'status':403})
-        
+        if activity.thumbnail:
+            if os.path.isfile(activity.thumbnail.path):
+                os.remove(activity.thumbnail.path)
         activity.delete()
         return Response({'message':'Delete activity successfully.',
                          'status':200})
     
     @action(detail=True , methods=['put'])
     def unliked(self , request, pk=None):
-        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=int(request.data.get('user_id')))
         activity = self.get_object()
         # if django_user.id not in activity.liked_users.values_list('id', flat=True):
         #     return Response({'message':'You haven\'t liked this activity.',
@@ -154,7 +158,7 @@ class ActivityViewSet(viewsets.GenericViewSet):
     @action(detail=True , methods=['put'])
     def liked(self , request, pk=None):
         activity = self.get_object()
-        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=int(request.data.get('user_id')))
         
         activity.liked_users.add(django_user)
         activity.save()
@@ -166,7 +170,7 @@ class ActivityViewSet(viewsets.GenericViewSet):
     @action(detail=True , methods=['put'])
     def liked_unliked(self, request , pk=None):
         activity = self.get_object()
-        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=int(request.data.get('user_id')))
         
         # if not liked the activity yet
         if django_user not in activity.liked_users.all():
@@ -191,7 +195,7 @@ class ActivityViewSet(viewsets.GenericViewSet):
     @action(detail=True , methods=['put'])
     def participate(self , request, pk=None):
         activity = self.get_object()
-        django_user = DjangoUser.objects.get(id=request.data.get('user_id'))
+        django_user = DjangoUser.objects.get(id=int(request.data.get('user_id')))
         
         activity.participants.add(django_user)
         activity.save()
@@ -223,32 +227,44 @@ class ActivityViewSet(viewsets.GenericViewSet):
         return self.get_paginated_response(serializer.data)
     
     @action(detail=True, methods=['patch'])
-    def update_avatar(self, request, pk=None):
+    def update_thumbnail(self, request, pk=None):
         activity = self.get_object()
         try:
-            os.remove()
+            original_thumbnail_path = activity.thumbnail.path
         except:
             pass
-        update_avatar = request.data.get('avatar')
+        update_avatar = request.data.get('thumbnail')
         filename = update_avatar.name.split('.')[0] + '_' + str(uuid.uuid4()) + '.' + update_avatar.name.split('.')[1]
+        
         with Image.open(update_avatar) as img:
             if img.format not in ['JPEG', 'PNG', 'GIF']:
                 return Response({'message':'Image format is not supported'} , status=400)
             img.thumbnail((1024,1024))
             resized_image = img.copy()
+            
         # Save the resized image to temp folder
         temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
         if not os.path.exists(temp_dir):
             os.makedirs(temp_dir)
         with open(os.path.join(temp_dir, filename), 'wb') as f:
             resized_image.save(f, format='JPEG')
+    
+        if not os.path.exists(os.path.join(settings.MEDIA_ROOT, 'activity')):
+            os.makedirs(os.path.join(settings.MEDIA_ROOT, 'activity'))
+        
         # Remove the resized image file to the mdia/django)user/images folder
         os.replace(os.path.join(temp_dir , filename),
                    os.path.join(settings.MEDIA_ROOT, 'activity', filename))
         activity.avatar = os.path.join('activity', filename)
         activity.save()
         
-        return Response({'message':'Activity avatar updated successfully'})
+        # Remove the original avatar
+        try:
+            os.remove(original_thumbnail_path)
+        except:
+            pass
+        
+        return Response({'message':'Activity thumbnail updated successfully'})
     
 class ActivityCommentViewSet(viewsets.GenericViewSet):
     queryset = ActivityComment.objects.all()
