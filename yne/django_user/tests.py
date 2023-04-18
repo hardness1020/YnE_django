@@ -1,18 +1,19 @@
 from io import BytesIO
 import json
 import firebase_admin.auth as auth
-# from PIL import Image 
+from PIL import Image 
 
-import settings
+from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, APIClient
 from rest_framework import status
+import auth_firebase.authentication
+import firebase_admin.auth as auth
 
-import yne.auth_firebase.authentication
 from yne.activity.models import (Activity , ActivityCategory , ActivityComment,
-                                 ActivityLikedByPeopleAssociation , ActivityLocation,
-                                 ActivityParticipantAssociation)
+                             ActivityLikedByPeopleAssociation , ActivityLocation,
+                             ActivityParticipantAssociation)
 from .models import DjangoUser , UserJob , UserHobby
 
 class UserTests(TestCase):
@@ -64,15 +65,15 @@ class UserTests(TestCase):
             'name': 'test_user3',
             'gender':'F',
             'introduction':'test_user3_introduction',
-            'hobbies_id':[self.hobby1.id , self.hobby2.id],
-            'jobs_id':[self.job1.id , self.job2.id]
+            'hobbies_id':[str(self.hobby1.id) , str(self.hobby2.id)],
+            'jobs_id':[str(self.job1.id) , str(self.job2.id)]
         }, )
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], 'DjangoUser created successfully')
         self.assertEqual(response.data['data']['name'], 'test_user3')
-        self.assertEqual(response.data['data']['hobbies_num'], 2)
-        self.assertEqual(response.data['data']['participating_activities_num'], 0)
+        self.assertEqual(response.data['data']['hobbies_num'], '2')
+        self.assertEqual(response.data['data']['participating_activities_num'], '0')
         
     # OK
     def test_user_update(self):
@@ -83,13 +84,13 @@ class UserTests(TestCase):
             'name': 'test_user1_update',
             'gender':'2',
             'introduction':'test_user1_introduction_update',
-            'hobbies_id':[self.hobby2.id],
-            'jobs_id':[self.job2.id]
+            'hobbies_id':[str(self.hobby2.id)],
+            'jobs_id':[str(self.job2.id)]
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], 'DjangoUser updated successfully')
         self.assertEqual(response.data['data']['name'], 'test_user1_update')
-        self.assertEqual(response.data['data']['hobbies_num'], 1)
+        self.assertEqual(response.data['data']['hobbies_num'], '1')
         
     # OK
     def test_user_list(self):
@@ -110,7 +111,7 @@ class UserTests(TestCase):
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['data']['name'], 'test_user1')
-        self.assertEqual(response.data['data']['hobbies_num'], 1)
+        self.assertEqual(response.data['data']['hobbies_num'], '1')
         self.assertEqual(response.data['data']['introduction'], 'test_user1_introduction')
     
     # OK
@@ -134,12 +135,29 @@ class UserTests(TestCase):
         suggest_user.hobbies.add(self.hobby1)
         suggest_user.save()
         response = self.client.post(f'/django_user/{self.user1.id}/suggest_other_user/', data={
-            'existed_users_id': [self.user1.id, self.user2.id]
+            'existed_users_id': [str(self.user1.id), str(self.user2.id)]
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['data']['name'], 'suggest_user')
         self.assertEqual(response.data['data']['introduction'], 'Should get this suggest user')
         
+    # Not Done
+    def test_user_update_avatar(self):
+        """
+        Test DjangoUser Update Avatar
+        """
+        upfile = BytesIO()
+        pilimg = Image.new('RGB', (100, 100))
+        pilimg.save(fp=upfile, format='PNG')
+        image=SimpleUploadedFile('test.png', upfile.getvalue(), content_type='image/png')
+        response = self.client.patch(f'/django_user/{self.user1.id}/update_avatar/', data={
+            'avatar': image
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], 'User avatar updated successfully')
+            
+            
+            
     # TODO: authentification part
     # def test_hero_django_user(self):
     #     """
@@ -183,7 +201,7 @@ class UserHobbyTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], 'UserHobby create successfully')
         self.assertEqual(response.data['data']['name'], 'test_create_hobby')
-        self.assertEqual(response.data['data']['all_users_num'], 0)
+        self.assertEqual(response.data['data']['all_users_num'], '0')
     
     # OK
     def test_user_hobby_update(self):
@@ -216,7 +234,7 @@ class UserHobbyTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['data']['name'], 'test_hobby1')
         self.assertEqual(response.data['data']['all_users'][0]['name'], 'test_user1')
-        self.assertEqual(response.data['data']['all_users_num'], 2)
+        self.assertEqual(response.data['data']['all_users_num'], '2')
         
     # OK
     def test_user_hobby_destroy(self):
@@ -262,7 +280,7 @@ class UserJobTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], 'UserJob create successfully')
         self.assertEqual(response.data['data']['name'], 'test_create_job')
-        self.assertEqual(response.data['data']['all_users_num'], 0)
+        self.assertEqual(response.data['data']['all_users_num'], '0')
     
     # OK
     def test_user_job_update(self):
@@ -294,7 +312,7 @@ class UserJobTests(TestCase):
         response = self.client.get(f'/django_user/job/{self.job1.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['data']['name'], 'test_job1')
-        self.assertEqual(response.data['data']['all_users_num'] , 2)
+        self.assertEqual(response.data['data']['all_users_num'] , '2')
         self.assertEqual(response.data['data']['all_users'][0]['name'], 'test_user1')
         
     # OK

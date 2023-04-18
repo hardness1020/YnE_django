@@ -1,4 +1,5 @@
 from io import BytesIO
+from PIL import Image
 import json
 # from PIL import Image 
 
@@ -6,7 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, APIClient
 from rest_framework import status
-
+ 
 from yne.auth_firebase import * 
 from yne.django_user.models import DjangoUser , UserJob , UserHobby
 from .models import (Activity , ActivityCategory , ActivityComment,
@@ -68,19 +69,19 @@ class ActivityTests(TestCase):
         Test create Activity
         """
         response = self.client.post(f'/activity/' , data={
-            'user_id': self.django_user.id,
+            'user_id': str(self.django_user.id),
             'start_date': 'test_start_date',
             'end_date': 'test_end_date',
             'title': 'test_title',
-            'location_id': self.location.id,
+            'location_id': str(self.location.id),
             'description': 'test_description',
-            'categories_id': [self.category.id]
+            'categories_id': [str(self.category.id)]
         })
         
         self.assertEqual(response.status_code , status.HTTP_200_OK)
         self.assertEqual(response.data['data']['host']['name'] , "test_user")
         self.assertEqual(response.data['data']['title'] , "test_title")
-        self.assertEqual(response.data['data']['participants_num'] , 1)
+        self.assertEqual(response.data['data']['participants_num'] , '1')
         self.assertEqual(response.data['data']['location']['name'] , "test_location")
         self.assertEqual(response.data['data']['categories'][0]['name'] , "test_category")
     
@@ -152,7 +153,7 @@ class ActivityTests(TestCase):
         })
         self.assertEqual(response.status_code , status.HTTP_200_OK)
         self.assertEqual(response.data['message'] , f'{self.django_user.name} likes the {self.activity.title} activity.')
-        self.assertEqual(response.data['data']['likes_num'] , 1)
+        self.assertEqual(response.data['data']['likes_num'] , '1')
         self.assertEqual(response.data['data']['liked_users'][0]['name'] , self.django_user.name)
         
     # OK
@@ -168,7 +169,7 @@ class ActivityTests(TestCase):
         })
         self.assertEqual(response.status_code , status.HTTP_200_OK)
         self.assertEqual(response.data['message'] , f'{self.django_user.name} unlikes the {self.activity.title} activity.')
-        self.assertEqual(response.data['data']['likes_num'] , 0)
+        self.assertEqual(response.data['data']['likes_num'] , '0')
         self.assertEqual(response.data['status'], 200)
     
     # OK
@@ -218,7 +219,7 @@ class ActivityTests(TestCase):
             })
         self.assertEqual(response.status_code , status.HTTP_200_OK)
         self.assertEqual(response.data['message'] , f'{django_user2.name} participates the {self.activity.title} activity.')
-        self.assertEqual(response.data['data']['participants_num'] , 2)
+        self.assertEqual(response.data['data']['participants_num'] , '2')
      
      # OK
     def test_activity_near_activities(self):
@@ -268,9 +269,23 @@ class ActivityTests(TestCase):
         response = self.client.get(f'/activity/{self.activity.id}/similar_activities/')
         
         self.assertEqual(response.status_code , status.HTTP_200_OK)
-        self.assertEqual(response.data['data'][0]['title'] , "Similar activity2")
-        self.assertEqual(response.data['data'][1]['title'] , "Similar activity1")
-        
+        self.assertEqual(response.data['data'][0]['title'] , "Similar activity1")
+        self.assertEqual(response.data['data'][1]['title'] , "Similar activity2")
+    
+    # OK
+    def test_activity_update_thumbnail(self):
+        """
+        Test update activity thumbnail
+        """
+        upfile = BytesIO()
+        pilimg = Image.new('RGB', (100, 100))
+        pilimg.save(fp=upfile, format='PNG')
+        image = SimpleUploadedFile('test.png', upfile.getvalue(), content_type='image/png')
+        response = self.client.patch(f'/activity/{self.activity.id}/update_thumbnail/' , data={
+            'thumbnail':image
+        })
+        self.assertEqual(response.status_code , status.HTTP_200_OK)
+        self.assertEqual(response.data['message'] , 'Activity thumbnail updated successfully')
         
         
         

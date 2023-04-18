@@ -14,7 +14,7 @@ class UserShortSerializers(serializers.ModelSerializer):
         fields = ['id' , 'name' , 'gender']
         
     def get_gender(self, obj):
-        return obj.get_gender_display()
+        return str(obj.get_gender_display())
 
 class UserShortForActivitySerializers(serializers.ModelSerializer):
     id = serializers.CharField()
@@ -27,7 +27,7 @@ class UserShortForActivitySerializers(serializers.ModelSerializer):
         fields = ['id' , 'name' , 'gender']
         
     def get_gender(self, obj):
-        return obj.get_gender_display()
+        return str(obj.get_gender_display())
 #
 
 class UserHobbySerializers(serializers.ModelSerializer):
