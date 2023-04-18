@@ -158,7 +158,10 @@ USE_TZ = True
 
 # Define static storage via django-storages[google]
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_ROOT = os.path.join(BASE_DIR, "yne","static")
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "yne", "media")
 
 if os.getenv("TRAMPOLINE_CI", None):
     # collect the static files in following path to STATIC_ROOT

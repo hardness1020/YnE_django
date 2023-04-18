@@ -49,7 +49,7 @@
             "program": "${workspaceFolder}/yne/manage.py",
             "args": [
                 "test",
-                // "user"
+                "django_user.tests.UserTests.test_user_update_avatar"
             ],
             "env": {
                 "GOOGLE_CLOUD_PROJECT": "yne-django-dev",

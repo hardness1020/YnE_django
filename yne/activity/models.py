@@ -17,6 +17,14 @@ class ActivityLikedByPeopleAssociation(models.Model):
     activity = models.ForeignKey('Activity', on_delete=models.CASCADE)
     django_user = models.ForeignKey('django_user.DjangoUser', on_delete=models.CASCADE)
 
+class ActivityImage(models.Model):
+    activity = models.ForeignKey('Activity', related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='activity/images/', blank=True, null=True)
+    def get_image(self, request):
+        if self.image and hasattr(self.image, 'url'):
+            return request.build_absolute_uri(self.image.url)
+        else:
+            return None
         
 class Activity(models.Model): 
     id = models.AutoField(primary_key = True)
@@ -27,6 +35,7 @@ class Activity(models.Model):
     description = models.TextField(max_length = 1000)
     host = models.ForeignKey('django_user.DjangoUser', related_name='host_activities',on_delete=models.CASCADE)
     location = models.ForeignKey('ActivityLocation', related_name='all_activities', on_delete=models.CASCADE)
+    thumbnail = models.ImageField(upload_to='activity/thumbnail/', blank=True, null=True)
     
     categories = models.ManyToManyField(ActivityCategory, related_name='all_activities', blank = True)
     participants = models.ManyToManyField('django_user.DjangoUser' , through=ActivityParticipantAssociation,
