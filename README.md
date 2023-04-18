@@ -50,9 +50,9 @@ pip3 install -r requirements.txt
 
 ## 🎈 Local Development <a name="usage"></a>
 Doc: https://cloud.google.com/python/django/flexible-environment#linuxmacos_2
-1.  - **Development on Local Machine SQLite Database**
+1.  - **Development on Local Machine SQLite Database (deprecated)**
         1.  Must **have** .env file in the root directory
-    -  **Development on Google App Engine with cloud SQL**
+    - **Development on Google App Engine with cloud SQL**
         1.  Must **not have** .env file in the root directory
         2.  Select the project yne-django-dev and user account and then initiate authentication (setup once on your local machine)
             ``` 
@@ -68,6 +68,7 @@ Doc: https://cloud.google.com/python/django/flexible-environment#linuxmacos_2
               ```
               export GOOGLE_CLOUD_PROJECT=yne-django-dev
               export USE_CLOUD_SQL_AUTH_PROXY=true
+              export GOOGLE_APPLICATION_CREDENTIALS=<path-to-key>
               ```
 
 2.  Run the following command to start the server
