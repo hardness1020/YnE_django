@@ -1,0 +1,21 @@
+<!-- chat/templates/chat/room.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Room</title>
+</head>
+<body>
+    <textarea readonly id="chat-log" cols="100" rows="20"></textarea><br/>
+    <input id="chat-message-input" type="text" size="100"/><br/>
+    <input id="chat-message-submit" type="button" value="Send"/>
+</body>
+<script>
+    document.querySelector('#chat-message-submit').onclick = () => {
+        var message = document.querySelector('#chat-message-input').value;
+        var textarea = document.getElementById('chat-log');
+        document.querySelector('#chat-log').value += (message + '\n');
+        textarea.scrollTop = textarea.scrollHeight;
+    }
+</script>
+</html>

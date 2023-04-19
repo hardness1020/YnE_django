@@ -8,3 +8,6 @@ django-storages[google]==1.13
 djangorestframework==3.14.0
 Pillow==9.2
 firebase_admin
+
+channels[daphne]
+channels_redis

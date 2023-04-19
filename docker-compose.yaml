@@ -1,0 +1,52 @@
+services:
+    redis:
+        image: redis:latest
+        container_name: redis
+        restart: always
+        ports:
+            - 6379:6379
+
+    web:  
+        build: 
+            context: .
+            dockerfile: ./yne/Dockerfile
+        command: ["sh", "-c", "./cloud-sql-proxy --credentials-file=./keys/yne-django-dev-6502d5adad64.json yne-django-dev:asia-east1:yne-django-dev & gunicorn yne.wsgi:application --bind 0.0.0.0:8000"]
+        volumes:
+            - .:/app
+        expose:
+            - 8000
+        environment:
+            - GOOGLE_APPLICATION_CREDENTIALS=keys/yne-django-dev-6502d5adad64.json
+            - GOOGLE_CLOUD_PROJECT=yne-django-dev
+            - USE_CLOUD_SQL_AUTH_PROXY=true
+        depends_on:
+            - redis
+    
+    daphne:
+        build: 
+            context: .
+            dockerfile: ./yne/Dockerfile
+        command: daphne yne.asgi:application --bind 0.0.0.0 --port 9000
+        volumes:
+            - .:/app
+        expose:
+            - 9000
+        environment:
+            - GOOGLE_APPLICATION_CREDENTIALS=./keys/yne-django-dev-6502d5adad64.json
+            - GOOGLE_CLOUD_PROJECT=yne-django-dev
+            - USE_CLOUD_SQL_AUTH_PROXY=true
+        depends_on:
+            - redis
+
+    nginx:
+        build: ./nginx
+        ports:
+            - 1337:80
+        volumes:
+            - /static/:/static/
+            - /media/:/media/
+        depends_on:
+            - web
+            - daphne
+
+    

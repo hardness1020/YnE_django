@@ -1,25 +1,28 @@
+import os
+import uuid
+from PIL import Image
+import random
+from datetime import datetime, timedelta
+import firebase_admin.auth as auth
+
+from django.conf import settings
 from django.shortcuts import render
 from django.utils import timezone
-from datetime import datetime, timedelta
 from django.db.models import Q, Count
 from django.db import transaction
-import random
 from rest_framework import viewsets #支援以下功能：{list , creat , retrieve , update , partial_update , destory}
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from auth_firebase.authentication import FirebaseAuthentication
-import firebase_admin.auth as auth
-from PIL import Image
-import uuid
-import os
 
-from activity.models import (Activity , ActivityCategory , ActivityComment ,
+
+from yne.auth_firebase.authentication import FirebaseAuthentication
+from yne.activity.models import (Activity , ActivityCategory , ActivityComment ,
                              ActivityLikedByPeopleAssociation , ActivityParticipantAssociation)
 from django_user.models import (DjangoUser , UserHobby , UserJob)
 from django_user.serializers import UserSerializers  , UserShortSerializers , UserMediumSerializers, UserHobbySerializers , UserJobSerializers
-from django.conf import settings
 
 # Create your views here.
 class UserPages(PageNumberPagination):

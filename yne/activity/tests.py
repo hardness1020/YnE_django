@@ -1,4 +1,5 @@
 from io import BytesIO
+from PIL import Image
 import json
 # from PIL import Image 
 
@@ -6,11 +7,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory, APIClient
 from rest_framework import status
-from auth_firebase import * 
-from PIL import Image
-
-from django_user.models import DjangoUser , UserJob , UserHobby
-from activity.models import (Activity , ActivityCategory , ActivityComment,
+ 
+from yne.auth_firebase import * 
+from yne.django_user.models import DjangoUser , UserJob , UserHobby
+from .models import (Activity , ActivityCategory , ActivityComment,
                              ActivityLikedByPeopleAssociation , ActivityLocation,
                              ActivityParticipantAssociation)
 

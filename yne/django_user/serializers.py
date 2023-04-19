@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from django_user.models import DjangoUser , UserJob , UserHobby
-from activity.serializers import (ActivityShortSerializers, ActivityCommentSerializers,)
+
+from yne.activity.serializers import (ActivityShortSerializers, ActivityCommentSerializers,)
+from .models import DjangoUser , UserJob , UserHobby
 
 class UserShortSerializers(serializers.ModelSerializer):
     id = serializers.CharField()

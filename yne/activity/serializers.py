@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from activity.models import ActivityParticipantAssociation , Activity , ActivityCategory , ActivityComment , ActivityLikedByPeopleAssociation , ActivityLocation
+
+from .models import (ActivityParticipantAssociation , Activity , ActivityCategory , 
+                     ActivityComment , ActivityLikedByPeopleAssociation , ActivityLocation)
 
 
-#
 class ActivityCommentSerializers(serializers.ModelSerializer):
     id = serializers.CharField()
     comment_time = serializers.CharField()
@@ -41,13 +42,13 @@ class ActivityShortSerializers(serializers.ModelSerializer):
         return str(obj.participants.count())
         
 class ActivityMediumSerializers(ActivityShortSerializers):
+    from yne.django_user.serializers import UserShortForActivitySerializers
     id = serializers.CharField()
     comments_num = serializers.SerializerMethodField()
     likes_num = serializers.SerializerMethodField()
     categories = ActivityCategorySerializers(many=True)
     # host_basic = UserShortSerializers(source='host') may happened circluar import error
     # host_image
-    from django_user.serializers import UserShortForActivitySerializers
     host = UserShortForActivitySerializers()
     class Meta:
         model = Activity
@@ -63,9 +64,9 @@ class ActivityMediumSerializers(ActivityShortSerializers):
         return str(obj.host.name)
 
 class ActivitySerializers(ActivityMediumSerializers):
+    from yne.django_user.serializers import UserShortForActivitySerializers
     id = serializers.CharField()
     comments = ActivityCommentSerializers(many=True)
-    from django_user.serializers import UserShortForActivitySerializers
     participants = UserShortForActivitySerializers(many=True)
     liked_users = UserShortForActivitySerializers(many=True)
     class Meta:
