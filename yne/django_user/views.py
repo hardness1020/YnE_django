@@ -3,7 +3,6 @@ import uuid
 from PIL import Image
 import random
 from datetime import datetime, timedelta
-import firebase_admin.auth as auth
 
 from django.conf import settings
 from django.shortcuts import render
@@ -15,14 +14,12 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from auth_firebase.authentication import FirebaseAuthentication
-
 
 from yne.auth_firebase.authentication import FirebaseAuthentication
 from yne.activity.models import (Activity , ActivityCategory , ActivityComment ,
                              ActivityLikedByPeopleAssociation , ActivityParticipantAssociation)
-from django_user.models import (DjangoUser , UserHobby , UserJob)
-from django_user.serializers import UserSerializers  , UserShortSerializers , UserMediumSerializers, UserHobbySerializers , UserJobSerializers
+from .models import (DjangoUser , UserHobby , UserJob)
+from .serializers import UserSerializers  , UserShortSerializers , UserMediumSerializers, UserHobbySerializers , UserJobSerializers
 
 # Create your views here.
 class UserPages(PageNumberPagination):
