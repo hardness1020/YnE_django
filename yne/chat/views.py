@@ -14,8 +14,3 @@ class ChatRoom(View):
         return render(request, self.template_name, {
             'name': request.POST.get('name', 'NoName')
         })
-
-    def post(self, request, *args, **kwargs):
-        return render(request, self.template_name, {
-            'name': request.POST.get('name', 'NoName')
-        })
