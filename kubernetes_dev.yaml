@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp
+spec:
+  selector:
+    app: myapp
+  ports:
+    - protocol: TCP
+      port: 1337
+      targetPort: 80
+  type: LoadBalancer
+  
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+        - name: web
+          image: gcr.io/yne-django-dev/yne_django-web:latest
+          command: ["sh", "-c", "./cloud-sql-proxy --credentials-file=./keys/yne-django-dev-6502d5adad64.json yne-django-dev:asia-east1:yne-django-dev & gunicorn yne.wsgi:application --bind 0.0.0.0:8000"]
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /app/keys/yne-django-dev-6502d5adad64.json
+            - name: GOOGLE_CLOUD_PROJECT
+              value: yne-django-dev
+            - name: USE_CLOUD_SQL_AUTH_PROXY
+              value: "true"
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: cloudsql-instance-credentials
+              mountPath: /app/keys
+              readOnly: true
+        - name: daphne
+          image: gcr.io/yne-django-dev/yne_django-daphne:latest
+          command: ["daphne", "yne.asgi:application", "--bind", "0.0.0.0", "--port", "9000"]
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /app/keys/yne-django-dev-6502d5adad64.json
+            - name: GOOGLE_CLOUD_PROJECT
+              value: yne-django-dev
+            - name: USE_CLOUD_SQL_AUTH_PROXY
+              value: "true"
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: cloudsql-instance-credentials
+              mountPath: /app/keys
+              readOnly: true
+        - name: nginx
+          image: gcr.io/yne-django-dev/yne_django-nginx:latest
+          ports:
+            - containerPort: 80
+      volumes:
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials

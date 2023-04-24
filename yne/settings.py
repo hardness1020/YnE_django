@@ -130,6 +130,7 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# The setting of database will be set by parsing the DATABASE_URL environment variable
 DATABASES = {"default": env.db()}
 
 # If the flag as been set, configure to use proxy

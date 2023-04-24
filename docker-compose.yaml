@@ -9,10 +9,12 @@ services:
     web:  
         build: 
             context: .
-            dockerfile: ./yne/Dockerfile
+            dockerfile: ./yne/web.Dockerfile
         command: ["sh", "-c", "./cloud-sql-proxy --credentials-file=./keys/yne-django-dev-6502d5adad64.json yne-django-dev:asia-east1:yne-django-dev & gunicorn yne.wsgi:application --bind 0.0.0.0:8000"]
         volumes:
-            - .:/app
+            - ./manage.py:/app/manage.py
+            - ./yne:/app/yne
+            - ./keys:/app/keys
         expose:
             - 8000
         environment:
@@ -25,10 +27,12 @@ services:
     daphne:
         build: 
             context: .
-            dockerfile: ./yne/Dockerfile
+            dockerfile: ./yne/daphne.Dockerfile
         command: daphne yne.asgi:application --bind 0.0.0.0 --port 9000
         volumes:
-            - .:/app
+            - ./manage.py:/app/manage.py
+            - ./yne:/app/yne
+            - ./keys:/app/keys
         expose:
             - 9000
         environment:
@@ -48,5 +52,3 @@ services:
         depends_on:
             - web
             - daphne
-
-    

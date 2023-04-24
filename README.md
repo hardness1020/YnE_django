@@ -22,68 +22,65 @@
 - [📝 Table of Contents](#-table-of-contents)
 - [🧐 About ](#-about-)
 - [🏁 Getting Started ](#-getting-started-)
-  - [Prerequisites](#prerequisites)
+  - [Prerequisites ](#prerequisites-)
 - [🎈 Local Development ](#-local-development-)
-- [🔧 Running the Tests ](#-running-the-tests-)
 - [🚀 Deployment ](#-deployment-)
-  - [Development ](#development-)
-  - [Production ](#production-)
 - [🎉 Acknowledgements ](#-acknowledgements-)
+
+<br/>
 
 ## 🧐 About <a name = "about"></a>
 
 This is an back-end for YnE APP (Youth and Elderly). 
+
 It is a web application that show the youth activities for the elderly.
-It was deployed on Google APP Engine.
+
+<br/>
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
 
-### Prerequisites
+### Prerequisites <a name = "prerequisites"></a>
 
-Run the following command to install all the required packages.
+- Run the following command to install all the required packages.
+  ```
+  pip3 install -r requirements.txt
+  ```
+- Not have .env file in the root directory
+- Download the project key from Google Cloud Platform and put it in the /keys directory
+- Download [docker-compose](https://docs.docker.com/compose/install/). Suggestion to use scenario two or directly download from github.
 
-```
-pip3 install -r requirements.txt
-```
-
-
+<br/>
 
 ## 🎈 Local Development <a name="usage"></a>
-Doc: https://cloud.google.com/python/django/flexible-environment#linuxmacos_2
-1.  - **Development on Local Machine SQLite Database (deprecated)**
-        1.  Must **have** .env file in the root directory
-    - **Development on Google App Engine with cloud SQL**
-        1.  Must **not have** .env file in the root directory
-        2.  Select the project yne-django-dev and user account and then initiate authentication (setup once on your local machine)
-            ``` 
-            gcloud init
-            gcloud auth application-default login
-            ```
-        3.  Establish a connection from your local computer to your Cloud SQL instance. 
-            - Create another terminal and run the following command (download the cloud-sql-proxy from https://cloud.google.com/sql/docs/mysql/sql-proxy)
-              ```
-              ./cloud-sql-proxy yne-django-dev:asia-east1:yne-django-dev
-              ```
-            - In orginal terminal
-              ```
-              export GOOGLE_CLOUD_PROJECT=yne-django-dev
-              export USE_CLOUD_SQL_AUTH_PROXY=true
-              export GOOGLE_APPLICATION_CREDENTIALS=<path-to-key>
-              ```
+The [prerequisties](#prerequisites-) must be done before running the following commands.
 
-2.  Run the following command to start the server
+1.  Select the project yne-django-dev and user account and then initiate authentication (setup once on your local machine)
+    ```
+    gcloud init
+    gcloud auth application-default login
+    ```
+
+2.  Build the container for each service and a connection from your local computer to Cloud SQL instance. 
+    ```
+    docker-compose up -d
+    ```
+    - The port 1337 is used for outside connection to the server ([127.0.0.1:1337](http://127.0.0.1:1337/))
+
+3.  If you want to establish the tables in the database, run the code in the web container.
+    ```
+    docker exec -it yne-django-dev_web_1 bash
+    ```
     ```
     python3 manage.py makemigrations
     python3 manage.py migrate
     python3 manage.py collectstatic
-    python3 manage.py runserver
     ```
-    Then go to http://localhost:8000/ to see the app running
+    
 
+<br/>
 
-## 🔧 Running the Tests <a name = "tests"></a>
-1. Done first part of [Local Development ](#-local-development-).
-2.  - Recommended to **use the debug toolbar to run the tests**
+<!-- ## 🔧 Running the Tests <a name = "tests"></a>
+1.  - Recommended to **use the debug toolbar to run the tests**
     - Or use CLI. Run all the tests
       ```
       python3 manage.py test
@@ -94,49 +91,30 @@ Doc: https://cloud.google.com/python/django/flexible-environment#linuxmacos_2
       python3 manage.py test <app_name>
       ```
 
+<br/> -->
 
 ## 🚀 Deployment <a name = "deployment"></a>
+> If you are running docker as root (i.e. with sudo docker), then make sure to configure the authentication as root. [Link](https://stackoverflow.com/questions/55446787/permission-issues-while-docker-push)
 
-Staging environment followed by: https://cloud.google.com/appengine/docs/legacy/standard/php/creating-separate-dev-environments
-
-<!-- Doc: https://cloud.google.com/python/django/flexible-environment#linuxmacos_2 -->
-
-<!-- ! Reset the environment variable to ensure that the app is deployed by the correct settings
+Select the project yne-django-\<dev_or_prod> and user account
 ```
-export GOOGLE_CLOUD_PROJECT=yne-django
-export USE_CLOUD_SQL_AUTH_PROXY=true
-export SETTINGS_NAME=yne_django_settings
-``` -->
-
-### Development <a name = "development"></a>
-Select the project yne-django-dev and user account
-``` 
-gcloud init
-```
-Create another terminal and run the following command
-```
-./cloud-sql-proxy yne-django-dev:asia-east1:yne-django-dev
-```
-Deploy the app
-```
-gcloud app deploy ./app-dev.yaml 
+gcloud auth login
+gcloud config set project yne-django-<dev_or_prod>
+gcloud auth configure-docker
 ```
 
-### Production <a name = "production"></a>
-Select the project yne-django and user account
-``` 
-gcloud init
+Push the four images to Google Container Registry
 ```
-Create another terminal and run the following command
+docker-compose build
+
+docker tag <IMAGE_NAME>:latest gcr.io/yne-django-<dev_or_prod>/<IMAGE_NAME>:latest
+docker push gcr.io/yne-django-<dev_or_prod>/<IMAGE_NAME>:latest
 ```
-./cloud-sql-proxy yne-django:asia-east1:yne-django
-```
-Deploy the app
-```
-gcloud app deploy ./app-prod.yaml 
-```
+
+<br/>
 
 ## 🎉 Acknowledgements <a name = "acknowledgement"></a>
-- [Infrastructure](https://python.plainenglish.io/how-deploy-an-asgi-django-application-with-nginx-gunicorn-daphne-and-supervisor-on-ubuntu-server-dfd810f56274)
+- [Google Cloud Staging Environment](https://cloud.google.com/appengine/docs/legacy/standard/php/creating-separate-dev-environments)
+  
 
 
