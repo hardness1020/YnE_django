@@ -17,6 +17,12 @@
     <br> 
 </p>
 
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=b9lXTUMW3UI">
+    <img src="https://res.cloudinary.com/marcomontalbano/image/upload/v1702538755/video_to_markdown/images/youtube--b9lXTUMW3UI-c05b58ac6eb4c4700831b2b3070cd403.jpg" alt="YnE Introduction">
+  </a>
+</p>
+
 ## 📝 Table of Contents
 
 - [📝 Table of Contents](#-table-of-contents)
